@@ -8,6 +8,7 @@ import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -38,23 +39,8 @@ public class MainActivity extends ActionBarActivity {
 
         PreferenceManager.setDefaultValues(this, R.xml.preferences, true);
         setContentView(R.layout.activity_main);
-        final AccessAPI api = AccessAPI.getInstance();
-        api.init(this,new SessionListener() {
-            @Override
-            public void sessionReady(final String sessionid) {
-                api.getProducts(new APIListener() {
-                    @Override
-                    public void receiveAnswer(Object obj) {
-                        List<Product> productList = (List<Product>) obj;
-                        productsAdapter = new ProductsAdapter(MainActivity.this, productList);
-                        productsListView.setAdapter(productsAdapter);
-                    }
-                },sessionid);
-            }
-        });
 
         productsListView = (ListView) findViewById(R.id.productsListView);
-
         productsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -63,7 +49,7 @@ public class MainActivity extends ActionBarActivity {
                 startActivity(intent);
             }
         });
-
+        new LoadProducts().execute("");
         tabHost=(TabHost)findViewById(R.id.tabHost);
         tabHost.setup();
 
@@ -89,6 +75,27 @@ public class MainActivity extends ActionBarActivity {
         tabHost.addTab(spec1);
         tabHost.addTab(spec2);
         tabHost.addTab(spec3);
+    }
+
+    private class LoadProducts extends AsyncTask<String, Void, Void>{
+        @Override
+        protected Void doInBackground(String... strings) {
+            final AccessAPI api = AccessAPI.getInstance();
+            api.init(MainActivity.this,new SessionListener() {
+                @Override
+                public void sessionReady(final String sessionid) {
+                    api.getProducts(new APIListener() {
+                        @Override
+                        public void receiveAnswer(Object obj) {
+                            List<Product> productList = (List<Product>) obj;
+                            productsAdapter = new ProductsAdapter(MainActivity.this, productList);
+                            productsListView.setAdapter(productsAdapter);
+                        }
+                    },sessionid);
+                }
+            });
+            return null;
+        }
     }
 
     @Override
