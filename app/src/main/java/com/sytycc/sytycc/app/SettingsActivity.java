@@ -14,7 +14,10 @@ public class SettingsActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_settings);
+        //setContentView(R.layout.activity_settings);
+        getFragmentManager().beginTransaction()
+                .replace(android.R.id.content, new SettingsFragment())
+                .commit();
     }
 
 
@@ -37,15 +40,4 @@ public class SettingsActivity extends ActionBarActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
-    @SuppressLint("NewApi")
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    private static class SettingsFragment extends PreferenceFragment {
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.preferences);
-    }
-}
 }

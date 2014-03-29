@@ -1,6 +1,8 @@
 package com.sytycc.sytycc.app;
 
 import android.annotation.TargetApi;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
@@ -11,6 +13,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
@@ -62,14 +65,17 @@ public class MainActivity extends ActionBarActivity {
         spec3.setContent(R.id.tab3);
         spec3.setIndicator("Settings");
 
+        /* show settings fragment in settings tab */
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        SettingsFragment fragment = new SettingsFragment();
+        fragmentTransaction.add(R.id.tab3, fragment);
+        fragmentTransaction.commit();
+
         tabHost.addTab(spec1);
         tabHost.addTab(spec2);
         tabHost.addTab(spec3);
-
-        // Testing Purposes
-        showNotification(R.drawable.notification,getString(R.string.notification_example_title),getString(R.string.notification_example_text));
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -86,6 +92,9 @@ public class MainActivity extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_settings) {
+            startActivity(new Intent(this, SettingsActivity.class));
+            // Testing Purposes
+            //showNotification(R.drawable.notification,getString(R.string.notification_example_title),getString(R.string.notification_example_text));
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -97,7 +106,8 @@ public class MainActivity extends ActionBarActivity {
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(imageId)
                         .setContentTitle(title)
-                        .setContentText(text);
+                        .setContentText(text)
+                        .setAutoCancel(true);
 
         // Creates an explicit intent for an Activity in your app
         Intent resultIntent = new Intent(this, MainActivity.class);
