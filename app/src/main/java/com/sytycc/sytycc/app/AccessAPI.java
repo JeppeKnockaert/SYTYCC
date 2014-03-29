@@ -16,6 +16,7 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,6 +41,10 @@ public class AccessAPI{
         username = sharedPref.getString("pref_key_username",null);
         birthday = sharedPref.getString("pref_key_birthday",null);
         this.context = context;
+    }
+
+    public void init(){
+        requestTicket();
     }
 
     private void requestTicket(){
@@ -105,6 +110,14 @@ public class AccessAPI{
                 return headers;
             }
         };
+        try {
+            String body = new String(strRequest.getBody(),"UTF-8");
+            System.out.println("body: "+body);
+        } catch (UnsupportedEncodingException e) {
+            System.out.println("117: "+e);
+        } catch (AuthFailureError authFailureError) {
+            System.out.println("119: "+authFailureError);
+        }
         queue.add(strRequest);
     }
 
