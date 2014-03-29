@@ -9,6 +9,10 @@ import android.view.MenuItem;
 
 public class MainActivity extends ActionBarActivity {
 
+    private TabHost tabHost;
+    private ListView productsListView;
+    private ProductAdapter productAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -16,6 +20,34 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         AccessAPI api = new AccessAPI(this);
         api.init();
+
+        List<Product> productList = new ArrayList<Product>();
+        productList.add(new Product("Cuenta NÓMINA","14650100911708338319",1465,"ES65 1465 0100 91 1708338319","INGDESMMXXX","15/04/2013",17,1,28999,28999));
+
+
+        productAdapter = new ProductAdapter(this,productList);
+
+        productsListView = (ListView) findViewById(R.id.productsListView);
+        productsListView.setAdapter(productAdapter);
+
+        tabHost=(TabHost)findViewById(R.id.tabHost);
+        tabHost.setup();
+
+        TabHost.TabSpec spec1=tabHost.newTabSpec("Home");
+        spec1.setContent(R.id.tab1);
+        spec1.setIndicator("Home");
+
+        TabHost.TabSpec spec2=tabHost.newTabSpec("Notifications");
+        spec2.setIndicator("Notifications");
+        spec2.setContent(R.id.tab2);
+
+        TabHost.TabSpec spec3=tabHost.newTabSpec("Settings");
+        spec3.setContent(R.id.tab3);
+        spec3.setIndicator("Settings");
+
+        tabHost.addTab(spec1);
+        tabHost.addTab(spec2);
+        tabHost.addTab(spec3);
     }
 
 
