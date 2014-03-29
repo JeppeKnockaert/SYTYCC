@@ -1,11 +1,13 @@
-package com.sytycc.sytycc.app.layout.Notifications;
+package com.sytycc.sytycc.app.layout.notifications;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.sytycc.sytycc.app.R;
@@ -43,18 +45,19 @@ public class NotificationAdapter extends ArrayAdapter<Notification> {
         // 3. Get the two text view from the rowView
         TextView labelView = (TextView) rowView.findViewById(R.id.label);
         TextView valueView = (TextView) rowView.findViewById(R.id.value);
+        ImageView valueView2 = (ImageView) rowView.findViewById(R.id.value2);
 
         // 4. Set the text for textView
         labelView.setText(notificationsArrayList.get(position).getTitle());
         valueView.setText(notificationsArrayList.get(position).getText());
 
+
         /* TODO make difference between read and unread notifications more appealing */
-        labelView.setTextColor(Color.WHITE);
-        valueView.setTextColor(Color.WHITE);
+
         if(notificationsArrayList.get(position).isRead()){
-            rowView.setBackgroundColor(Color.RED);
+            valueView2.setVisibility(View.INVISIBLE);
         } else {
-            rowView.setBackgroundColor(Color.GREEN);
+            labelView.setTypeface(Typeface.DEFAULT_BOLD);
         }
 
         // 5. return rowView
