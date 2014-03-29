@@ -14,7 +14,8 @@
     <string name="pref_key_username_default">example</string>
     <string name="pref_key_birthday_title">Birthday</string>
     <string name="pref_key_birthday_default">example</string>
-
     <string name="notification_example_title">Notification</string>
     <string name="notification_example_text">Reuse is een homo</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+
 </resources>
