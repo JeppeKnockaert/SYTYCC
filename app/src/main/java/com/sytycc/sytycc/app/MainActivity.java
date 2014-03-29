@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
@@ -34,8 +35,8 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-//        PreferenceManager.setDefaultValues(this, R.xml.preferences, true);
-//        setContentView(R.layout.activity_main);
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, true);
+        setContentView(R.layout.activity_main);
 //        final AccessAPI api = AccessAPI.getInstance();
 //        api.init(this,new SessionListener() {
 //            @Override
