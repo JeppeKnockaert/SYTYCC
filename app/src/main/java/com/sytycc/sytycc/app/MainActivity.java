@@ -21,6 +21,7 @@ import android.widget.TabHost;
 import com.sytycc.sytycc.app.data.Product;
 import com.sytycc.sytycc.app.layout.products.ProductsAdapter;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,8 +53,8 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent = new Intent(MainActivity.this, TransactionsActivity.class);
+                intent.putExtra(Product.TAG,(Product)productsAdapter.getItem(i));
                 startActivity(intent);
-                finish();
             }
         });
 

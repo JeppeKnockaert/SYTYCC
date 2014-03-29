@@ -4,9 +4,13 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TabHost;
+import android.widget.TextView;
 
+import com.sytycc.sytycc.app.data.Product;
 import com.sytycc.sytycc.app.data.Transaction;
 import com.sytycc.sytycc.app.layout.transactions.TransactionsAdapter;
 
@@ -16,17 +20,41 @@ import java.util.List;
 
 public class TransactionsActivity extends ActionBarActivity {
 
-    private TabHost tabHost;
+    private Product product;
+    private TextView nameText;
+    private TextView ibanText;
+    private TextView newText;
+    private TextView amountText;
+
+
     private ListView transactionsListView;
     private TransactionsAdapter transactionsAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_transactions);
 
-        List<Transaction> transactionList;
-        transactionList = new ArrayList<Transaction>();
+        RelativeLayout includeView = (RelativeLayout)findViewById(R.id.productListItem);
+        nameText = (TextView) includeView.findViewById(R.id.productNameText);
+        ibanText = (TextView) includeView.findViewById(R.id.ibanText);
+        newText = (TextView) includeView.findViewById(R.id.newText);
+        amountText = (TextView) includeView.findViewById(R.id.amountText);
+
+        System.out.println(savedInstanceState);
+        System.out.println(getIntent().getExtras().keySet());
+
+        product = (Product) getIntent().getExtras().getSerializable(Product.TAG);
+        System.out.println(product);
+        System.out.println(product.getName());
+
+        nameText.setText(product.getName());
+        ibanText.setText(product.getIban());
+        newText.setText("0");
+        amountText.setText(""+product.getBalance());
+
+        List<Transaction> transactionList = new ArrayList<Transaction>();
         transactionList.add(new Transaction("Traspaso emitido",0.5,"11/10/2013","14650100911708338319","14650100952025956295","TFR","TFR",'G'));
 
         transactionsAdapter = new TransactionsAdapter(this,transactionList);

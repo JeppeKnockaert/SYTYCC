@@ -2,7 +2,7 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent" android:id="@+id/productListItem">
 
     <TextView
         android:layout_width="wrap_content"
@@ -19,9 +19,8 @@
         android:layout_height="wrap_content"
         android:text="New Text"
         android:id="@+id/ibanText"
-        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
+        android:layout_alignParentStart="false"
         android:layout_toLeftOf="@+id/amountText"
         android:layout_below="@+id/productNameText" />
 
@@ -30,10 +29,9 @@
         android:layout_height="wrap_content"
         android:text="New Text"
         android:id="@+id/amountText"
-        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/newText"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignTop="@+id/ibanText" />
+        android:layout_alignParentEnd="true" />
 
     <TextView
         android:layout_width="wrap_content"
