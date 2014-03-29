@@ -117,7 +117,7 @@ public class MainActivity extends ActionBarActivity {
         if (id == R.id.action_settings) {
             startActivity(new Intent(this, SettingsActivity.class));
             // Testing Purposes
-            //showNotification(R.drawable.notification,getString(R.string.notification_example_title),getString(R.string.notification_example_text));
+            showNotification(R.drawable.notificatie,getString(R.string.notification_example_title),getString(R.string.notification_example_text));
             return true;
         }
         return super.onOptionsItemSelected(item);
