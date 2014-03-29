@@ -34,6 +34,24 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+//        PreferenceManager.setDefaultValues(this, R.xml.preferences, true);
+//        setContentView(R.layout.activity_main);
+//        final AccessAPI api = AccessAPI.getInstance();
+//        api.init(this,new SessionListener() {
+//            @Override
+//            public void sessionReady(String sessionid) {
+//                api.getTimeLine(null,null,null,null,new APIListener() {
+//                    @Override
+//                    public void receiveAnswer(Object obj) {
+//                        List<Transaction> transactions = (List<Transaction>)obj;
+//                        for (Transaction trns : transactions){
+//                            System.out.println(trns.getAccountFrom());
+//                        }
+//                    }
+//                },sessionid);
+//            }
+//        });
+
         List<Product> productList;
         productList = new ArrayList<Product>();
         productList.add(new Product("Cuenta NÓMINA","14650100911708338319",1465,"ES65 1465 0100 91 1708338319","INGDESMMXXX","15/04/2013",17,1,28999,28999));
