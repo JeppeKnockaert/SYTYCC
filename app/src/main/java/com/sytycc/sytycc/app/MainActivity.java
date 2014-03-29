@@ -5,6 +5,14 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ListView;
+import android.widget.TabHost;
+
+import com.sytycc.sytycc.app.data.Product;
+import com.sytycc.sytycc.app.layout.products.ProductAdapter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class MainActivity extends ActionBarActivity {

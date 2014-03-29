@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -16,7 +17,7 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.UnsupportedEncodingException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,6 +33,7 @@ public class AccessAPI{
     private final String birthday;
 
     private String ticket;
+    private String sessionid;
 
     public AccessAPI(Context context){
         // Read settings
@@ -87,7 +89,7 @@ public class AccessAPI{
         StringRequest strRequest = new StringRequest(Request.Method.POST,url,new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                System.out.println(response);
+                getRequest("/openapi/rest/products");
             }
         }, new Response.ErrorListener() {
             @Override
@@ -95,6 +97,12 @@ public class AccessAPI{
                 System.out.println("97: "+error);
             }
         }){
+            @Override
+            protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                Response<String> resp = super.parseNetworkResponse(response);
+                setSessionCookie(response.headers);
+                return resp;
+            }
 
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
@@ -103,22 +111,49 @@ public class AccessAPI{
                 return params;
             }
 
+        };
+
+        queue.add(strRequest);
+    }
+
+    /**
+     * Checks the response headers for session cookie and saves it
+     * @param headers Response Headers.
+     */
+    private void setSessionCookie(Map<String, String> headers) {
+        String cookie = headers.get("Set-Cookie");
+        String[] splitCookie = cookie.split(";");
+        sessionid = splitCookie[0];
+    }
+
+    private void getRequest(String requestpath){
+        RequestQueue queue = Volley.newRequestQueue(context);
+        String url = getAPIURL(requestpath);
+
+        JsonObjectRequest jsObjRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                System.out.println(response.toString());
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println("66:"+error);
+            }
+        }){
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> headers = new HashMap<String, String>();
-                headers.put("Content-Type", "application/x-www-form-urlencoded");
+                // Add session cookie to header
+                Map<String, String> headers = super.getHeaders();
+                if (headers == null
+                        || headers.equals(Collections.emptyMap())) {
+                    headers = new HashMap<String, String>();
+                }
+                headers.put("Cookie", sessionid);
                 return headers;
             }
         };
-        try {
-            String body = new String(strRequest.getBody(),"UTF-8");
-            System.out.println("body: "+body);
-        } catch (UnsupportedEncodingException e) {
-            System.out.println("117: "+e);
-        } catch (AuthFailureError authFailureError) {
-            System.out.println("119: "+authFailureError);
-        }
-        queue.add(strRequest);
+        queue.add(jsObjRequest);
     }
 
     private void setTicket(String ticket){
