@@ -1,25 +1,22 @@
 package com.sytycc.sytycc.app;
 
 import android.app.Dialog;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.TabHost;
 import android.widget.TextView;
 
 import com.sytycc.sytycc.app.data.Product;
 import com.sytycc.sytycc.app.data.Transaction;
 import com.sytycc.sytycc.app.layout.transactions.TransactionsAdapter;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 
@@ -61,16 +58,22 @@ public class TransactionsActivity extends ActionBarActivity {
 
         List<Transaction> transactionList = new ArrayList<Transaction>();
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        try {
-            transactionList.add(new Transaction("001 216515656","description",0.5,sdf.parse("21/12/2012"),sdf.parse("22/12/2012")));
-        } catch (ParseException e) {
-        }
-
-        transactionsAdapter = new TransactionsAdapter(this,transactionList);
+        final AccessAPI api = AccessAPI.getInstance();
+        api.init(this,new SessionListener() {
+            @Override
+            public void sessionReady(final String sessionid) {
+                api.getProductTransactions(product.getUuid(),new APIListener() {
+                    @Override
+                    public void receiveAnswer(Object obj) {
+                        List<Transaction> transactionList = (List<Transaction>) obj;
+                        transactionsAdapter = new TransactionsAdapter(TransactionsActivity.this,transactionList);
+                        transactionsListView.setAdapter(transactionsAdapter);
+                    }
+                },sessionid);
+            }
+        });
 
         transactionsListView = (ListView) findViewById(R.id.transactionList);
-        transactionsListView.setAdapter(transactionsAdapter);
-
         transactionsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {

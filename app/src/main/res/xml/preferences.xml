@@ -2,20 +2,6 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory
-        android:title="@string/apicategory"
-        android:key="pref_key_apicategory">
-        <EditTextPreference
-            android:key="pref_key_apikey"
-            android:title="@string/pref_key_apikey_title"
-            android:defaultValue="@string/pref_key_apikey_default"
-        />
-        <EditTextPreference
-            android:key="pref_key_apiurl"
-            android:title="@string/pref_key_apiurl_title"
-            android:defaultValue="@string/pref_key_apiurl_default"
-        />
-    </PreferenceCategory>
-    <PreferenceCategory
         android:title="@string/usercategory"
         android:key="pref_key_usercategory">
         <EditTextPreference

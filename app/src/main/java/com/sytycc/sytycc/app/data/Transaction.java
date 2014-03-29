@@ -1,5 +1,7 @@
 package com.sytycc.sytycc.app.data;
 
+import java.util.Date;
+
 /**
  * Created by Roel on 29/03/14.
  */
@@ -7,13 +9,15 @@ public class Transaction {
 
     private String bankName;
     private String description;
+    private String typeDesc;
     private double amount;
     private Date effectiveDate;
     private Date valDate;
 
-    public Transaction(String bankName, String description, double amount, Date effectiveDate, Date valDate) {
+    public Transaction(String bankName, String description, String typeDesc, double amount, Date effectiveDate, Date valDate) {
         this.bankName = bankName;
         this.description = description;
+        this.typeDesc = typeDesc;
         this.amount = amount;
         this.effectiveDate = effectiveDate;
         this.valDate = valDate;
@@ -30,6 +34,10 @@ public class Transaction {
     public String getDescription() {
         return description;
     }
+
+    public String getTypeDesc() { return typeDesc; }
+
+    public void setTypeDesc(String typeDesc) { this.typeDesc = typeDesc; }
 
     public void setDescription(String description) {
         this.description = description;

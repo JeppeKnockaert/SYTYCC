@@ -21,7 +21,6 @@ import android.widget.ListView;
 import android.widget.TabHost;
 
 import com.sytycc.sytycc.app.data.Product;
-import com.sytycc.sytycc.app.data.Transaction;
 import com.sytycc.sytycc.app.layout.products.ProductsAdapter;
 
 import java.util.List;
@@ -49,27 +48,11 @@ public class MainActivity extends ActionBarActivity {
                         List<Product> productList = (List<Product>) obj;
                         productsAdapter = new ProductsAdapter(MainActivity.this, productList);
                         productsListView.setAdapter(productsAdapter);
-                        for (int i = 0; i < productList.size(); i++) {
-                            Product product = productList.get(i);
-                            api.getProductTransactions(product.getUuid(),new APIListener() {
-                                @Override
-                                public void receiveAnswer(Object obj) {
-                                    List<Transaction> transactions = (List<Transaction>)obj;
-                                    for (Transaction trns : transactions){
-
-                                    }
-                                }
-                            },sessionid);
-                        }
                     }
                 },sessionid);
             }
         });
 
-        //List<Product> productList;
-        //productList = new ArrayList<Product>();
-        //productList.add(new Product("Cuenta NÓMINA","14650100911708338319",1465,"ES65 1465 0100 91 1708338319","INGDESMMXXX","15/04/2013",17,1,28999,28999));
-        System.out.println("testtesttesttesttesttesttesttesttesttesttesttesttesttest");
         productsListView = (ListView) findViewById(R.id.productsListView);
 
         productsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {

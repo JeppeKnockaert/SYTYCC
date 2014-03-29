@@ -1,9 +1,11 @@
 package com.sytycc.sytycc.app.data;
 
+import java.io.Serializable;
+
 /**
  * Created by Roel on 29/03/14.
  */
-public class Product implements Serializable{
+public class Product implements Serializable {
     public static String TAG = Product.class.getName();
 
     private String name;

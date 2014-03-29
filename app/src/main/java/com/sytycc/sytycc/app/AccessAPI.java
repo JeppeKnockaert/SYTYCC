@@ -22,8 +22,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,8 +36,8 @@ import java.util.Map;
  */
 public class AccessAPI{
 
-    private String apikey;
-    private String apiurl;
+    private String apikey = "93ub7fAkQmG170m90hdOxbmlSPA3MTHY";
+    private String apiurl = "https://apisandbox.ingdirect.es";
     private Context context;
     private String username;
     private String birthday;
@@ -53,8 +56,6 @@ public class AccessAPI{
         // Read settings
         context = ctxt;
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(ctxt);
-        apikey = sharedPref.getString("pref_key_apikey",null);
-        apiurl = sharedPref.getString("pref_key_apiurl",null);
         username = sharedPref.getString("pref_key_username",null);
         birthday = sharedPref.getString("pref_key_birthday",null);
 
@@ -213,19 +214,25 @@ public class AccessAPI{
         getRequest("/openapi/rest/products/" + uuid + "/movements", null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
+                SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
                 List<Transaction> transactions = new ArrayList<Transaction>();
                 try {
                     JSONArray producttransactions = response.getJSONArray("elements");
                     for (int i = 0; i < producttransactions.length(); i++) {
                         JSONObject transactionobj = producttransactions.getJSONObject(i);
-                        Transaction transaction = new Transaction(transactionobj.getString("description"),
-                                transactionobj.getDouble("amount"),transactionobj.getString("effectiveDate"),
-                                null, null, transactionobj.getString("tranCode"),
-                                transactionobj.getString("typeDesc"), transactionobj.getString("typeMovement").charAt(0));
-                        if (transactionobj.has("bankName")){
-                            transaction.setAccountTo(transactionobj.getString("bankName"));
+                        try {
+                            Date effectiveDate = format.parse(transactionobj.getString("effectiveDate"));
+                            Date valDate = format.parse(transactionobj.getString("valDate"));
+                            Transaction transaction = new Transaction(null, transactionobj.getString("description"),
+                                    transactionobj.getString("typeDesc"), transactionobj.getDouble("amount"),
+                                    effectiveDate, valDate);
+                            if (transactionobj.has("bankName")){
+                                transaction.setBankName(transactionobj.getString("bankName"));
+                            }
+                            transactions.add(transaction);
+                        } catch (ParseException e) {
+                            System.out.println("237: "+e);
                         }
-                        transactions.add(transaction);
                     }
                     listener.receiveAnswer(transactions);
                 } catch (JSONException e) {
