@@ -1,7 +1,13 @@
 package com.sytycc.sytycc.app;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,14 +30,15 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         PreferenceManager.setDefaultValues(this, R.xml.preferences, true);
         setContentView(R.layout.activity_main);
-        AccessAPI api = new AccessAPI(this);
-        api.init();
+       // AccessAPI api = new AccessAPI(this);
+       // api.init();
 
-        List<Product> productList = new ArrayList<Product>();
+        List<Product> productList;
+        productList = new ArrayList<Product>();
         productList.add(new Product("Cuenta NÓMINA","14650100911708338319",1465,"ES65 1465 0100 91 1708338319","INGDESMMXXX","15/04/2013",17,1,28999,28999));
-
 
         productAdapter = new ProductAdapter(this,productList);
 
@@ -56,6 +63,9 @@ public class MainActivity extends ActionBarActivity {
         tabHost.addTab(spec1);
         tabHost.addTab(spec2);
         tabHost.addTab(spec3);
+
+        // Testing Purposes
+        showNotification(R.drawable.notification,getString(R.string.notification_example_title),getString(R.string.notification_example_text));
     }
 
 
@@ -77,6 +87,40 @@ public class MainActivity extends ActionBarActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public void showNotification(int imageId, String title, String text) {
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(imageId)
+                        .setContentTitle(title)
+                        .setContentText(text);
+
+        // Creates an explicit intent for an Activity in your app
+        Intent resultIntent = new Intent(this, MainActivity.class);
+
+        // The stack builder object will contain an artificial back stack for the
+        // started Activity.
+        // This ensures that navigating backward from the Activity leads out of
+        // your application to the Home screen.
+
+        PendingIntent resultPendingIntent;
+            TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+            // Adds the back stack for the Intent (but not the Intent itself)
+            stackBuilder.addParentStack(MainActivity.class);
+            // Adds the Intent that starts the Activity to the top of the stack
+            stackBuilder.addNextIntent(resultIntent);
+            resultPendingIntent =
+                    stackBuilder.getPendingIntent(
+                            0,
+                            PendingIntent.FLAG_UPDATE_CURRENT
+                    );
+
+        mBuilder.setContentIntent(resultPendingIntent);
+        NotificationManager mNotificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        // mId allows you to update the notification later on.
+        mNotificationManager.notify(0, mBuilder.build());
     }
 
 }
