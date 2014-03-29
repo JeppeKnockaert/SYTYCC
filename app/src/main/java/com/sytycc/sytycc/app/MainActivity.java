@@ -13,11 +13,13 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TabHost;
 
 import com.sytycc.sytycc.app.data.Product;
-import com.sytycc.sytycc.app.layout.products.ProductAdapter;
+import com.sytycc.sytycc.app.layout.products.ProductsAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +29,7 @@ public class MainActivity extends ActionBarActivity {
 
     private TabHost tabHost;
     private ListView productsListView;
-    private ProductAdapter productAdapter;
+    private ProductsAdapter productsAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,10 +44,18 @@ public class MainActivity extends ActionBarActivity {
         productList = new ArrayList<Product>();
         productList.add(new Product("Cuenta NÓMINA","14650100911708338319",1465,"ES65 1465 0100 91 1708338319","INGDESMMXXX","15/04/2013",17,1,28999,28999));
 
-        productAdapter = new ProductAdapter(this,productList);
+        productsAdapter = new ProductsAdapter(this,productList);
 
         productsListView = (ListView) findViewById(R.id.productsListView);
-        productsListView.setAdapter(productAdapter);
+        productsListView.setAdapter(productsAdapter);
+        productsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Intent intent = new Intent(MainActivity.this, TransactionsActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
 
         tabHost=(TabHost)findViewById(R.id.tabHost);
         tabHost.setup();

@@ -15,14 +15,11 @@ import org.w3c.dom.Text;
 
 import java.util.List;
 
-/**
- * Created by Roel on 29/03/14.
- */
-public class ProductAdapter extends BaseAdapter {
+public class ProductsAdapter extends BaseAdapter {
     private List<Product> productList;
     private Context context;
 
-    public ProductAdapter(Context context, List<Product> productList){
+    public ProductsAdapter(Context context, List<Product> productList){
         this.context = context;
         this.productList = productList;
     }
