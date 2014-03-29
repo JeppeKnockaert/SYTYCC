@@ -3,7 +3,9 @@ package com.sytycc.sytycc.app.data;
 /**
  * Created by Roel on 29/03/14.
  */
-public class Product {
+public class Product implements Serializable{
+    public static String TAG = Product.class.getName();
+
     private String name;
     private String productNumber;
     private int bank;

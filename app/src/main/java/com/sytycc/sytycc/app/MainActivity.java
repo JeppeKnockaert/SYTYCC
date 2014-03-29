@@ -76,8 +76,8 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent = new Intent(MainActivity.this, TransactionsActivity.class);
+                intent.putExtra(Product.TAG,(Product)productsAdapter.getItem(i));
                 startActivity(intent);
-                finish();
             }
         });
 
@@ -86,15 +86,15 @@ public class MainActivity extends ActionBarActivity {
 
         TabHost.TabSpec spec1=tabHost.newTabSpec("Home");
         spec1.setContent(R.id.tab1);
-        spec1.setIndicator("Home");
+        spec1.setIndicator(getString(R.string.home_tab));
 
         TabHost.TabSpec spec2=tabHost.newTabSpec("Notifications");
-        spec2.setIndicator("Notifications");
+        spec2.setIndicator(getString(R.string.notifications_tab));
         spec2.setContent(R.id.tab2);
 
         TabHost.TabSpec spec3=tabHost.newTabSpec("Settings");
         spec3.setContent(R.id.tab3);
-        spec3.setIndicator("Settings");
+        spec3.setIndicator(getString(R.string.settings_tab));
 
         /* show settings fragment in settings tab */
         FragmentManager fragmentManager = getFragmentManager();
@@ -125,10 +125,20 @@ public class MainActivity extends ActionBarActivity {
         if (id == R.id.action_settings) {
             startActivity(new Intent(this, SettingsActivity.class));
             // Testing Purposes
-            //showNotification(R.drawable.notification,getString(R.string.notification_example_title),getString(R.string.notification_example_text));
+            showNotification(R.drawable.notification,getString(R.string.notification_example_title),getString(R.string.notification_example_text));
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    protected void onSaveInstanceState(Bundle bundle) {
+        super.onSaveInstanceState(bundle);
+        bundle.putInt("currentTabNr", tabHost.getCurrentTab());
+    }
+
+    protected void onRestoreInstanceState(Bundle bundle){
+        super.onRestoreInstanceState(bundle);
+        tabHost.setCurrentTab(bundle.getInt("currentTabNr"));
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
