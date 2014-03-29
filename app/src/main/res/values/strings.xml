@@ -19,4 +19,7 @@
     <string name="title_activity_settings">SettingsActivity</string>
     <string name="title_activity_transaction">TransactionActivity</string>
 
+    <string name="home_tab">Home</string>
+    <string name="notifications_tab">Notifications</string>
+    <string name="settings_tab">Settings</string>
 </resources>

@@ -78,15 +78,15 @@ public class MainActivity extends ActionBarActivity {
 
         TabHost.TabSpec spec1=tabHost.newTabSpec("Home");
         spec1.setContent(R.id.tab1);
-        spec1.setIndicator("Home");
+        spec1.setIndicator(getString(R.string.home_tab));
 
         TabHost.TabSpec spec2=tabHost.newTabSpec("Notifications");
-        spec2.setIndicator("Notifications");
+        spec2.setIndicator(getString(R.string.notifications_tab));
         spec2.setContent(R.id.tab2);
 
         TabHost.TabSpec spec3=tabHost.newTabSpec("Settings");
         spec3.setContent(R.id.tab3);
-        spec3.setIndicator("Settings");
+        spec3.setIndicator(getString(R.string.settings_tab));
 
         /* show settings fragment in settings tab */
         FragmentManager fragmentManager = getFragmentManager();
