@@ -1,27 +1,32 @@
 package com.sytycc.sytycc.app.data;
 
+import java.util.Date;
+
 /**
  * Created by Roel on 29/03/14.
  */
 public class Transaction {
+
+    private String bankName;
     private String description;
     private double amount;
-    private String effectiveDate;
-    private String accountFrom;
-    private String accountTo;
-    private String tranCode;
-    private String typeCod;
-    private char movementType;
+    private Date effectiveDate;
+    private Date valDate;
 
-    public Transaction(String description, double amount, String effectiveDate, String accountFrom, String accountTo, String tranCode, String typeCod, char movementType) {
+    public Transaction(String bankName, String description, double amount, Date effectiveDate, Date valDate) {
+        this.bankName = bankName;
         this.description = description;
         this.amount = amount;
         this.effectiveDate = effectiveDate;
-        this.accountFrom = accountFrom;
-        this.accountTo = accountTo;
-        this.tranCode = tranCode;
-        this.typeCod = typeCod;
-        this.movementType = movementType;
+        this.valDate = valDate;
+    }
+
+    public String getBankName() {
+        return bankName;
+    }
+
+    public void setBankName(String bankName) {
+        this.bankName = bankName;
     }
 
     public String getDescription() {
@@ -40,51 +45,19 @@ public class Transaction {
         this.amount = amount;
     }
 
-    public String getEffectiveDate() {
+    public Date getEffectiveDate() {
         return effectiveDate;
     }
 
-    public void setEffectiveDate(String effectiveDate) {
+    public void setEffectiveDate(Date effectiveDate) {
         this.effectiveDate = effectiveDate;
     }
 
-    public String getAccountFrom() {
-        return accountFrom;
+    public Date getValDate() {
+        return valDate;
     }
 
-    public void setAccountFrom(String accountFrom) {
-        this.accountFrom = accountFrom;
-    }
-
-    public String getAccountTo() {
-        return accountTo;
-    }
-
-    public void setAccountTo(String accountTo) {
-        this.accountTo = accountTo;
-    }
-
-    public String getTranCode() {
-        return tranCode;
-    }
-
-    public void setTranCode(String tranCode) {
-        this.tranCode = tranCode;
-    }
-
-    public String getTypeCod() {
-        return typeCod;
-    }
-
-    public void setTypeCod(String typeCod) {
-        this.typeCod = typeCod;
-    }
-
-    public char getMovementType() {
-        return movementType;
-    }
-
-    public void setMovementType(char movementType) {
-        this.movementType = movementType;
+    public void setValDate(Date valDate) {
+        this.valDate = valDate;
     }
 }

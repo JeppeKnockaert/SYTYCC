@@ -186,12 +186,12 @@ public class AccessAPI{
                     JSONArray transactionarray = response.getJSONArray("elements");
                     for (int i = 0; i < transactionarray.length(); i++) {
                         JSONObject transactionobj = transactionarray.getJSONObject(i);
-                        Transaction transaction = new Transaction(transactionobj.getString("description"),
+                        /**Transaction transaction = new Transaction(transactionobj.getString("description"),
                                 transactionobj.getDouble("amount"),transactionobj.getString("effectiveDate"),
                                 transactionobj.getString("accountFrom"),transactionobj.getString("accountTo"),
                                 transactionobj.getString("tranCode"),transactionobj.getString("typeCod"),
                                 transactionobj.getString("movementType").charAt(0));
-                        transactions.add(transaction);
+                        transactions.add(transaction);**/ // TODO
                     }
                     listener.receiveAnswer(transactions);
                 } catch (JSONException e) {
