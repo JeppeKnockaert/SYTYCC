@@ -122,6 +122,16 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    protected void onSaveInstanceState(Bundle bundle) {
+        super.onSaveInstanceState(bundle);
+        bundle.putInt("currentTabNr", tabHost.getCurrentTab());
+    }
+
+    protected void onRestoreInstanceState(Bundle bundle){
+        super.onRestoreInstanceState(bundle);
+        tabHost.setCurrentTab(bundle.getInt("currentTabNr"));
+    }
+
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     public void showNotification(int imageId, String title, String text) {
         NotificationCompat.Builder mBuilder =
