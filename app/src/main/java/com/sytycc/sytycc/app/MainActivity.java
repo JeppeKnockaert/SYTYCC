@@ -1,6 +1,8 @@
 package com.sytycc.sytycc.app;
 
 import android.annotation.TargetApi;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
@@ -11,6 +13,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -38,8 +41,21 @@ public class MainActivity extends ActionBarActivity {
 
         PreferenceManager.setDefaultValues(this, R.xml.preferences, true);
         setContentView(R.layout.activity_main);
-       // AccessAPI api = new AccessAPI(this);
-       // api.init();
+//        final AccessAPI api = AccessAPI.getInstance();
+//        api.init(this,new SessionListener() {
+//            @Override
+//            public void sessionReady(String sessionid) {
+//                api.getTimeLine(null,null,null,null,new APIListener() {
+//                    @Override
+//                    public void receiveAnswer(Object obj) {
+//                        List<Transaction> transactions = (List<Transaction>)obj;
+//                        for (Transaction trns : transactions){
+//                            System.out.println(trns.getAccountFrom());
+//                        }
+//                    }
+//                },sessionid);
+//            }
+//        });
 
         List<Product> productList;
         productList = new ArrayList<Product>();
@@ -63,24 +79,27 @@ public class MainActivity extends ActionBarActivity {
 
         TabHost.TabSpec spec1=tabHost.newTabSpec("Home");
         spec1.setContent(R.id.tab1);
-        spec1.setIndicator("Home");
+        spec1.setIndicator(getString(R.string.home_tab));
 
         TabHost.TabSpec spec2=tabHost.newTabSpec("Notifications");
-        spec2.setIndicator("Notifications");
+        spec2.setIndicator(getString(R.string.notifications_tab));
         spec2.setContent(R.id.tab2);
 
         TabHost.TabSpec spec3=tabHost.newTabSpec("Settings");
         spec3.setContent(R.id.tab3);
-        spec3.setIndicator("Settings");
+        spec3.setIndicator(getString(R.string.settings_tab));
+
+        /* show settings fragment in settings tab */
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        SettingsFragment fragment = new SettingsFragment();
+        fragmentTransaction.add(R.id.tab3, fragment);
+        fragmentTransaction.commit();
 
         tabHost.addTab(spec1);
         tabHost.addTab(spec2);
         tabHost.addTab(spec3);
-
-        // Testing Purposes
-        showNotification(R.drawable.notification,getString(R.string.notification_example_title),getString(R.string.notification_example_text));
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -97,9 +116,22 @@ public class MainActivity extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_settings) {
+            startActivity(new Intent(this, SettingsActivity.class));
+            // Testing Purposes
+            showNotification(R.drawable.notificatie,getString(R.string.notification_example_title),getString(R.string.notification_example_text));
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    protected void onSaveInstanceState(Bundle bundle) {
+        super.onSaveInstanceState(bundle);
+        bundle.putInt("currentTabNr", tabHost.getCurrentTab());
+    }
+
+    protected void onRestoreInstanceState(Bundle bundle){
+        super.onRestoreInstanceState(bundle);
+        tabHost.setCurrentTab(bundle.getInt("currentTabNr"));
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -108,7 +140,8 @@ public class MainActivity extends ActionBarActivity {
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(imageId)
                         .setContentTitle(title)
-                        .setContentText(text);
+                        .setContentText(text)
+                        .setAutoCancel(true);
 
         // Creates an explicit intent for an Activity in your app
         Intent resultIntent = new Intent(this, MainActivity.class);
