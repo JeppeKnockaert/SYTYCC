@@ -17,4 +17,6 @@
     <string name="notification_example_title">Notification</string>
     <string name="notification_example_text">Reuse is een homo</string>
     <string name="title_activity_settings">SettingsActivity</string>
+    <string name="title_activity_transaction">TransactionActivity</string>
+
 </resources>

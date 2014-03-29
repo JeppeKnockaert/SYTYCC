@@ -10,17 +10,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TabHost;
 
 import com.sytycc.sytycc.app.data.Product;
-import com.sytycc.sytycc.app.layout.products.ProductAdapter;
+import com.sytycc.sytycc.app.layout.products.ProductsAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,25 +31,46 @@ public class MainActivity extends ActionBarActivity {
 
     private TabHost tabHost;
     private ListView productsListView;
-    private ProductAdapter productAdapter;
+    private ProductsAdapter productsAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        PreferenceManager.setDefaultValues(this, R.xml.preferences, true);
-        setContentView(R.layout.activity_main);
-       // AccessAPI api = new AccessAPI(this);
-       // api.init();
+//        PreferenceManager.setDefaultValues(this, R.xml.preferences, true);
+//        setContentView(R.layout.activity_main);
+//        final AccessAPI api = AccessAPI.getInstance();
+//        api.init(this,new SessionListener() {
+//            @Override
+//            public void sessionReady(String sessionid) {
+//                api.getTimeLine(null,null,null,null,new APIListener() {
+//                    @Override
+//                    public void receiveAnswer(Object obj) {
+//                        List<Transaction> transactions = (List<Transaction>)obj;
+//                        for (Transaction trns : transactions){
+//                            System.out.println(trns.getAccountFrom());
+//                        }
+//                    }
+//                },sessionid);
+//            }
+//        });
 
         List<Product> productList;
         productList = new ArrayList<Product>();
         productList.add(new Product("Cuenta NÓMINA","14650100911708338319",1465,"ES65 1465 0100 91 1708338319","INGDESMMXXX","15/04/2013",17,1,28999,28999));
 
-        productAdapter = new ProductAdapter(this,productList);
+        productsAdapter = new ProductsAdapter(this,productList);
 
         productsListView = (ListView) findViewById(R.id.productsListView);
-        productsListView.setAdapter(productAdapter);
+        productsListView.setAdapter(productsAdapter);
+        productsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Intent intent = new Intent(MainActivity.this, TransactionsActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
 
         tabHost=(TabHost)findViewById(R.id.tabHost);
         tabHost.setup();
