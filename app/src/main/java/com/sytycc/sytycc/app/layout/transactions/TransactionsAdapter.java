@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.sytycc.sytycc.app.R;
 import com.sytycc.sytycc.app.data.Transaction;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 /**
@@ -67,12 +68,12 @@ public class TransactionsAdapter extends BaseAdapter{
             holder = (ViewHolder) convertView.getTag();
         }
 
-        holder.dateText.setText(rowItem.getEffectiveDate());
-        if(rowItem.getAccountFrom().equals("TODO")){ // TODO
-            holder.bankNrText.setText(rowItem.getAccountTo());
+        holder.dateText.setText(rowItem.getEffectiveDate().toString());
+        holder.bankNrText.setText(rowItem.getBankName());
+
+        if(rowItem.getAmount() < 0){
             convertView.setBackgroundColor(Color.RED);
         }else{
-            holder.bankNrText.setText(rowItem.getAccountFrom());
             convertView.setBackgroundColor(Color.GREEN);
         }
         holder.amountText.setText(""+rowItem.getAmount());

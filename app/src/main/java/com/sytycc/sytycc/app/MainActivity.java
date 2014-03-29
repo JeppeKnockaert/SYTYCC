@@ -9,6 +9,7 @@ import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -33,6 +34,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+
 import java.util.List;
 
 
@@ -51,39 +53,17 @@ public class MainActivity extends ActionBarActivity {
 
         PreferenceManager.setDefaultValues(this, R.xml.preferences, true);
         setContentView(R.layout.activity_main);
-//        final AccessAPI api = AccessAPI.getInstance();
-//        api.init(this,new SessionListener() {
-//            @Override
-//            public void sessionReady(String sessionid) {
-//                api.getTimeLine(null,null,null,null,new APIListener() {
-//                    @Override
-//                    public void receiveAnswer(Object obj) {
-//                        List<Transaction> transactions = (List<Transaction>)obj;
-//                        for (Transaction trns : transactions){
-//                            System.out.println(trns.getAccountFrom());
-//                        }
-//                    }
-//                },sessionid);
-//            }
-//        });
-
-        List<Product> productList;
-        productList = new ArrayList<Product>();
-        productList.add(new Product("Cuenta NÓMINA","14650100911708338319",1465,"ES65 1465 0100 91 1708338319","INGDESMMXXX","15/04/2013",17,1,28999,28999));
-
-        productsAdapter = new ProductsAdapter(this,productList);
 
         productsListView = (ListView) findViewById(R.id.productsListView);
-        productsListView.setAdapter(productsAdapter);
         productsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent = new Intent(MainActivity.this, TransactionsActivity.class);
+                intent.putExtra(Product.TAG,(Product)productsAdapter.getItem(i));
                 startActivity(intent);
-                finish();
             }
         });
-
+        new LoadProducts().execute("");
         tabHost=(TabHost)findViewById(R.id.tabHost);
         tabHost.setup();
 
@@ -115,6 +95,27 @@ public class MainActivity extends ActionBarActivity {
         tabHost.addTab(spec3);
     }
 
+    private class LoadProducts extends AsyncTask<String, Void, Void>{
+        @Override
+        protected Void doInBackground(String... strings) {
+            final AccessAPI api = AccessAPI.getInstance();
+            api.init(MainActivity.this,new SessionListener() {
+                @Override
+                public void sessionReady(final String sessionid) {
+                    api.getProducts(new APIListener() {
+                        @Override
+                        public void receiveAnswer(Object obj) {
+                            List<Product> productList = (List<Product>) obj;
+                            productsAdapter = new ProductsAdapter(MainActivity.this, productList);
+                            productsListView.setAdapter(productsAdapter);
+                        }
+                    },sessionid);
+                }
+            });
+            return null;
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -131,6 +132,7 @@ public class MainActivity extends ActionBarActivity {
         if (id == R.id.action_settings) {
             startActivity(new Intent(this, NotificationsActivity.class));
             // Testing Purposes
+
             /*showNotification(R.drawable.notification_white,getString(R.string.notification_example_title),getString(R.string.notification_example_text));
             ListView notifications = (ListView) findViewById(R.id.listView);
             ((NotificationAdapter)notifications.getAdapter()).addNotification(new Notification("Notification","Reuse is nen homo"));*/

@@ -1,11 +1,13 @@
 package com.sytycc.sytycc.app.data;
 
-import java.util.Date;
+import java.io.Serializable;
 
 /**
  * Created by Roel on 29/03/14.
  */
-public class Product {
+public class Product implements Serializable {
+    public static String TAG = Product.class.getName();
+
     private String name;
     private String productNumber;
     private int bank;
@@ -16,8 +18,9 @@ public class Product {
     private int subtype;
     private double availableBalance;
     private double balance;
+    private String uuid;
 
-    public Product(String name, String productNumber, int bank, String iban, String bic, String openingDate, int type, int subtype, double availableBalance, double balance) {
+    public Product(String name, String productNumber, int bank, String iban, String bic, String openingDate, int type, int subtype, double availableBalance, double balance, String uuid) {
         this.name = name;
         this.productNumber = productNumber;
         this.bank = bank;
@@ -28,6 +31,7 @@ public class Product {
         this.subtype = subtype;
         this.availableBalance = availableBalance;
         this.balance = balance;
+        this.uuid = uuid;
     }
 
     public String getName() {
@@ -109,4 +113,8 @@ public class Product {
     public void setBalance(double balance) {
         this.balance = balance;
     }
+
+    public String getUuid(){ return uuid; }
+
+    public void setUuid(String uuid) {this.uuid = uuid; }
 }

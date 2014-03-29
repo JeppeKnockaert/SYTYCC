@@ -4,11 +4,6 @@
     <string name="app_name">SYTYCC</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-    <string name="apicategory">API settings</string>
-    <string name="pref_key_apikey_title">ING API key</string>
-    <string name="pref_key_apikey_default">93ub7fAkQmG170m90hdOxbmlSPA3MTHY</string>
-    <string name="pref_key_apiurl_title">ING API URL</string>
-    <string name="pref_key_apiurl_default">https://developers.ingdirect.es</string>
     <string name="usercategory">User settings</string>
     <string name="pref_key_username_title">Username</string>
     <string name="pref_key_username_default">67957657V</string>
