@@ -1,10 +1,12 @@
 package com.sytycc.sytycc.app;
 
+import android.app.Dialog;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TabHost;
@@ -14,7 +16,10 @@ import com.sytycc.sytycc.app.data.Product;
 import com.sytycc.sytycc.app.data.Transaction;
 import com.sytycc.sytycc.app.layout.transactions.TransactionsAdapter;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 
@@ -55,12 +60,30 @@ public class TransactionsActivity extends ActionBarActivity {
         amountText.setText(""+product.getBalance());
 
         List<Transaction> transactionList = new ArrayList<Transaction>();
-        transactionList.add(new Transaction("Traspaso emitido",0.5,"11/10/2013","14650100911708338319","14650100952025956295","TFR","TFR",'G'));
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        try {
+            transactionList.add(new Transaction("001 216515656","description",0.5,sdf.parse("21/12/2012"),sdf.parse("22/12/2012")));
+        } catch (ParseException e) {
+        }
 
         transactionsAdapter = new TransactionsAdapter(this,transactionList);
 
         transactionsListView = (ListView) findViewById(R.id.transactionList);
         transactionsListView.setAdapter(transactionsAdapter);
+
+        transactionsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Dialog d = new Dialog(TransactionsActivity.this);
+                d.setTitle("Transaction details");
+                d.setContentView(R.layout.transaction_detailed_view);
+                ((TextView)d.findViewById(R.id.dateText)).setText(((Transaction)transactionsAdapter.getItem(i)).getEffectiveDate().toString());
+                ((TextView)d.findViewById(R.id.bankNumberText)).setText(((Transaction)transactionsAdapter.getItem(i)).getBankName());
+                ((TextView)d.findViewById(R.id.amountText)).setText(""+((Transaction)transactionsAdapter.getItem(i)).getAmount());
+                ((TextView)d.findViewById(R.id.descriptionText)).setText(((Transaction)transactionsAdapter.getItem(i)).getDescription());
+                d.show();
+            }
+        });
     }
 
 
