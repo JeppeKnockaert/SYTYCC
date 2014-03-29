@@ -13,6 +13,7 @@
     <string name="pref_key_username_title">Username</string>
     <string name="pref_key_username_default">67957657V</string>
     <string name="pref_key_birthday_title">Birthday</string>
+    <string name="pref_key_birthday_default">1/01/1980</string>
     <string name="notification_example_title">Notification</string>
     <string name="notification_example_text">Reuse is een homo</string>
     <string name="title_activity_settings">SettingsActivity</string>
