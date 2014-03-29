@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="@string/apicategory"
+        android:key="pref_key_apicategory">
+        <Preference
+            android:key="pref_key_apikey"
+            android:title="@string/pref_key_apikey_title"
+            android:defaultValue="@string/pref_key_apikey_default"
+        />
+        <Preference
+            android:key="pref_key_apiurl"
+            android:title="@string/pref_key_apiurl_title"
+            android:defaultValue="@string/pref_key_apiurl_default"
+        />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="@string/usercategory"
+        android:key="pref_key_usercategory">
+        <Preference
+            android:key="pref_key_username"
+            android:title="@string/pref_key_username_title"
+            android:defaultValue="@string/pref_key_username_default"
+        />
+        <Preference
+            android:key="pref_key_birthday"
+            android:title="@string/pref_key_birthday_title"
+            android:defaultValue="@string/pref_key_birthday_default"
+        />
+    </PreferenceCategory>
+</PreferenceScreen>
