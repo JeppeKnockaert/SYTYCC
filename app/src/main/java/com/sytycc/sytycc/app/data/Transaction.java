@@ -10,17 +10,21 @@ public class Transaction {
     private String accountFrom;
     private String accountTo;
     private String tranCode;
-    private String typeCod;
+    private String typeDesc;
     private char movementType;
 
-    public Transaction(String description, double amount, String effectiveDate, String accountFrom, String accountTo, String tranCode, String typeCod, char movementType) {
+    public Transaction(){
+
+    }
+
+    public Transaction(String description, double amount, String effectiveDate, String accountFrom, String accountTo, String tranCode, String typeDesc, char movementType) {
         this.description = description;
         this.amount = amount;
         this.effectiveDate = effectiveDate;
         this.accountFrom = accountFrom;
         this.accountTo = accountTo;
         this.tranCode = tranCode;
-        this.typeCod = typeCod;
+        this.typeDesc = typeDesc;
         this.movementType = movementType;
     }
 
@@ -72,12 +76,12 @@ public class Transaction {
         this.tranCode = tranCode;
     }
 
-    public String getTypeCod() {
-        return typeCod;
+    public String getTypeDesc() {
+        return typeDesc;
     }
 
-    public void setTypeCod(String typeCod) {
-        this.typeCod = typeCod;
+    public void setTypeDesc(String typeDesc) {
+        this.typeDesc = typeDesc;
     }
 
     public char getMovementType() {

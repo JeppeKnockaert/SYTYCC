@@ -13,7 +13,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,9 +21,9 @@ import android.widget.ListView;
 import android.widget.TabHost;
 
 import com.sytycc.sytycc.app.data.Product;
+import com.sytycc.sytycc.app.data.Transaction;
 import com.sytycc.sytycc.app.layout.products.ProductsAdapter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -40,30 +39,39 @@ public class MainActivity extends ActionBarActivity {
 
         PreferenceManager.setDefaultValues(this, R.xml.preferences, true);
         setContentView(R.layout.activity_main);
-//        final AccessAPI api = AccessAPI.getInstance();
-//        api.init(this,new SessionListener() {
-//            @Override
-//            public void sessionReady(String sessionid) {
-//                api.getTimeLine(null,null,null,null,new APIListener() {
-//                    @Override
-//                    public void receiveAnswer(Object obj) {
-//                        List<Transaction> transactions = (List<Transaction>)obj;
-//                        for (Transaction trns : transactions){
-//                            System.out.println(trns.getAccountFrom());
-//                        }
-//                    }
-//                },sessionid);
-//            }
-//        });
+        final AccessAPI api = AccessAPI.getInstance();
+        api.init(this,new SessionListener() {
+            @Override
+            public void sessionReady(final String sessionid) {
+                api.getProducts(new APIListener() {
+                    @Override
+                    public void receiveAnswer(Object obj) {
+                        List<Product> productList = (List<Product>) obj;
+                        productsAdapter = new ProductsAdapter(MainActivity.this, productList);
+                        productsListView.setAdapter(productsAdapter);
+                        for (int i = 0; i < productList.size(); i++) {
+                            Product product = productList.get(i);
+                            api.getProductTransactions(product.getUuid(),new APIListener() {
+                                @Override
+                                public void receiveAnswer(Object obj) {
+                                    List<Transaction> transactions = (List<Transaction>)obj;
+                                    for (Transaction trns : transactions){
 
-        List<Product> productList;
-        productList = new ArrayList<Product>();
-        productList.add(new Product("Cuenta NÓMINA","14650100911708338319",1465,"ES65 1465 0100 91 1708338319","INGDESMMXXX","15/04/2013",17,1,28999,28999));
+                                    }
+                                }
+                            },sessionid);
+                        }
+                    }
+                },sessionid);
+            }
+        });
 
-        productsAdapter = new ProductsAdapter(this,productList);
-
+        //List<Product> productList;
+        //productList = new ArrayList<Product>();
+        //productList.add(new Product("Cuenta NÓMINA","14650100911708338319",1465,"ES65 1465 0100 91 1708338319","INGDESMMXXX","15/04/2013",17,1,28999,28999));
+        System.out.println("testtesttesttesttesttesttesttesttesttesttesttesttesttest");
         productsListView = (ListView) findViewById(R.id.productsListView);
-        productsListView.setAdapter(productsAdapter);
+
         productsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
