@@ -16,12 +16,28 @@
         android:layout_height="wrap_content"
         android:inputType="numberPassword"
         android:ems="6"
-        android:id="@+id/editText"
+        android:id="@+id/pinEditText"
         android:gravity="center_horizontal" />
 
-    <Button
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="OK"
-        android:id="@+id/pinOKButton" />
+        android:weightSum="1">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="OK"
+            android:id="@+id/pinOKButton"
+            android:layout_weight="0.5" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cancel"
+            android:id="@+id/pinCancelButton"
+            android:layout_weight="0.5" />
+    </LinearLayout>
+
 </LinearLayout>
