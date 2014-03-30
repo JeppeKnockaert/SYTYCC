@@ -10,25 +10,25 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.sytycc.sytycc.app.R;
-import com.sytycc.sytycc.app.data.Notification;
+import com.sytycc.sytycc.app.data.Notifiable;
 
 import java.util.ArrayList;
 
 /**
  * Created by Michaël on 29/03/14.
  */
-public class NotificationAdapter extends ArrayAdapter<Notification> {
+public class NotificationAdapter extends ArrayAdapter<Notifiable> {
 
     private final Context context;
-    private final ArrayList<Notification> notificationsArrayList;
+    private final ArrayList<Notifiable> notificationsArrayList;
 
-    public NotificationAdapter(Context context, ArrayList<Notification> notificationsArrayList) {
+    public NotificationAdapter(Context context, ArrayList<Notifiable> notificationsArrayList) {
         super(context, R.layout.row, notificationsArrayList);
         this.context = context;
         this.notificationsArrayList = notificationsArrayList;
     }
 
-    public void addNotification(Notification notification){
+    public void addNotification(Notifiable notification){
         notificationsArrayList.add(notification);
         notifyDataSetChanged();
     }

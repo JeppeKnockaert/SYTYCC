@@ -1,13 +1,12 @@
 package com.sytycc.sytycc.app;
 
-import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 
 import com.sytycc.sytycc.app.data.Transaction;
-import com.sytycc.sytycc.app.data.Notification;
+import com.sytycc.sytycc.app.data.Notifiable;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -17,6 +16,7 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 
 import android.content.DialogInterface;
+
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
@@ -40,12 +40,15 @@ import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.TextView;
 
-import com.sytycc.sytycc.app.data.Notification;
+import com.sytycc.sytycc.app.data.InfoNotification;
+import com.sytycc.sytycc.app.data.Notifiable;
 import com.sytycc.sytycc.app.data.Product;
 import com.sytycc.sytycc.app.data.Transaction;
+import com.sytycc.sytycc.app.data.TransactionNotifiable;
 import com.sytycc.sytycc.app.layout.notifications.NotificationAdapter;
 import com.sytycc.sytycc.app.layout.notifications.NotificationService;
 import com.sytycc.sytycc.app.layout.products.ProductsAdapter;
+import com.sytycc.sytycc.app.utilities.IOManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -171,7 +174,7 @@ public class MainActivity extends ActionBarActivity {
         alert.show();
     }
 
-    private void showNotificationDetails(Notification notification){
+    private void showNotificationDetails(Notifiable notification){
         AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
         alert.setTitle("Notification details");
         TextView text = new TextView(MainActivity.this);
@@ -181,13 +184,14 @@ public class MainActivity extends ActionBarActivity {
         d.setTitle("Notification details");
         d.setContentView(R.layout.notification_detailed_view);
         ((TextView)d.findViewById(R.id.notification_text)).setText(notification.getMessage());
-        ((TextView)d.findViewById(R.id.notification_owner)).setText(notification.getOwner());
-        ((TextView)d.findViewById(R.id.notification_category)).setText(""+(notification.getCategory()));
-        ((TextView)d.findViewById(R.id.notification_bank_name)).setText(notification.getTransaction().getBankName());
-        ((TextView)d.findViewById(R.id.notification_description)).setText(notification.getTransaction().getDescription());
-        ((TextView)d.findViewById(R.id.notification_type)).setText(notification.getTransaction().getTypeDesc());
-        ((TextView)d.findViewById(R.id.notification_effective_date)).setText(notification.getTransaction().getEffectiveDate().toString());
-        ((TextView)d.findViewById(R.id.notification_val_date)).setText(notification.getTransaction().getValDate().toString());
+        ((TextView)d.findViewById(R.id.notification_owner)).setText(notification.getTitle());
+        /* TODO uitbreiden met meer details */
+        /*
+        if(notification instanceof InfoNotification){
+            InfoNotification infoNotification = (InfoNotification) notification;
+            ((TextView)d.findViewById(R.id.notification_text)).setText(infoNotification.);
+            ((TextView)d.findViewById(R.id.notification_text)).setText(notification.getMessage());
+        }*/
         d.show();
     }
 
@@ -249,20 +253,20 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void loadNotifications(){
-        ArrayList<Notification> noteList = new ArrayList<Notification>();
-        List<Notification> notifications = Notification.fetchNotificationsFromStorage(this);
+        ArrayList<Notifiable> noteList = new ArrayList<Notifiable>();
+        List<Notifiable> notifications = IOManager.fetchNotificationsFromStorage(this);
         if (notifications != null){
-            for (Notification notification : notifications){
+            for (Notifiable notification : notifications){
 
             }
         }
         /* TODO read from internal storage and add */
 
-        noteList.add(new Notification("Title 1","Reuse is nen homo 1", Notification.Category.INFO,null));
-        noteList.add(new Notification("Title 2","Reuse is nen homo 2", Notification.Category.INFO,null));
-        Notification n1 = new Notification("Title 3","Reuse is nen homo 3", Notification.Category.INFO,null);
-        Notification n2 = new Notification("Title 4","Reuse is nen homo 4", Notification.Category.INFO,null);
-        Notification n3 = new Notification("Title 5","Reuse is nen homo 5", Notification.Category.INFO,null);
+        noteList.add(new InfoNotification("Title 1","Reuse is nen homo 1"));
+        noteList.add(new InfoNotification("Title 2","Reuse is nen homo 2"));
+        Notifiable n1 = new InfoNotification("Title 3","Reuse is nen homo 3");
+        Notifiable n2 = new InfoNotification("Title 4","Reuse is nen homo 4");
+        Notifiable n3 = new InfoNotification("Title 5","Reuse is nen homo 5");
         n1.markAsRead();
         n2.markAsRead();
         n3.markAsRead();
@@ -316,16 +320,19 @@ public class MainActivity extends ActionBarActivity {
         }
 
         private Stack<Transaction> retrieveNewTransactions(Map<String, List<Transaction>> transactions){
-            Stack<Notification> notifications = Notification.fetchNotificationsFromStorage(MainActivity.this);
+            Stack<Notifiable> notifications = IOManager.fetchNotificationsFromStorage(MainActivity.this);
             Stack<Transaction> toadd = new Stack<Transaction>();
             for (Map.Entry<String, List<Transaction>> entry : transactions.entrySet()){
                 Transaction mostrecentnotification = null;
                 List<Transaction> transactionlist = entry.getValue();
-                Iterator<Notification> it = notifications.iterator();
+                Iterator<Notifiable> it = notifications.iterator();
                 while (it.hasNext()){
-                    Notification notification = it.next();
-                    if (notification.getCategory() == Notification.Category.TRANSACTION && notification.getOwner().equals(entry.getKey())){
-                        mostrecentnotification = notification.getTransaction();
+                    Notifiable notification = it.next();
+                    if (notification instanceof TransactionNotifiable){
+                        TransactionNotifiable transnotification = (TransactionNotifiable) notification;
+                        if (transnotification.getProduct().equals(entry.getKey())){
+                            mostrecentnotification = transnotification.getTransaction();
+                        }
                     }
                 }
                 int i = 0;
