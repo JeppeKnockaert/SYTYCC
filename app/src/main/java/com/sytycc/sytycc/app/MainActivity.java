@@ -24,7 +24,7 @@ import android.widget.ListView;
 import android.widget.TabHost;
 
 import com.sytycc.sytycc.app.data.Product;
-import com.sytycc.sytycc.app.layout.notificationss.NotificationsActivity;
+import com.sytycc.sytycc.app.layout.notifications.NotificationsActivity;
 import com.sytycc.sytycc.app.layout.products.ProductsAdapter;
 
 import java.io.FileOutputStream;

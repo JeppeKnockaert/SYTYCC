@@ -1,4 +1,4 @@
-package com.sytycc.sytycc.app.layout.notificationss;
+package com.sytycc.sytycc.app.layout.notifications;
 
 import android.content.Context;
 import android.graphics.Typeface;
