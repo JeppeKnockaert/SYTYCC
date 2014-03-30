@@ -13,14 +13,16 @@ public class Transaction {
     private double amount;
     private Date effectiveDate;
     private Date valDate;
+    private String productUuid;
 
-    public Transaction(String bankName, String description, String typeDesc, double amount, Date effectiveDate, Date valDate) {
+    public Transaction(String productUuid, String bankName, String description, String typeDesc, double amount, Date effectiveDate, Date valDate) {
         this.bankName = bankName;
         this.description = description;
         this.typeDesc = typeDesc;
         this.amount = amount;
         this.effectiveDate = effectiveDate;
         this.valDate = valDate;
+        this.productUuid = productUuid;
     }
 
     public String getBankName() {
@@ -65,6 +67,14 @@ public class Transaction {
 
     public void setValDate(Date valDate) {
         this.valDate = valDate;
+    }
+
+    public String getProductUuid() {
+        return productUuid;
+    }
+
+    public void setProductUuid(String productUuid) {
+        this.productUuid = productUuid;
     }
 
     @Override
