@@ -57,7 +57,9 @@ public class NotificationAdapter extends ArrayAdapter<Notifiable> {
         Log.i("diomaijeaioef",""+notificationsArrayList.get(position).isRead());
         if(notificationsArrayList.get(position).isRead()){
             valueView2.setVisibility(View.INVISIBLE);
+            labelView.setTypeface(Typeface.DEFAULT);
         } else {
+            valueView2.setVisibility(View.VISIBLE);
             labelView.setTypeface(Typeface.DEFAULT_BOLD);
         }
         rowView.setBackgroundColor(Color.TRANSPARENT);
