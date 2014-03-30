@@ -20,7 +20,10 @@
         android:id="@+id/transactionList"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="false" />
+        android:layout_alignParentStart="false"
+        android:paddingLeft="35dp"
+        android:paddingRight="35dp"
+        android:orientation="vertical"/>
 
     <TextView
         android:layout_width="match_parent"
