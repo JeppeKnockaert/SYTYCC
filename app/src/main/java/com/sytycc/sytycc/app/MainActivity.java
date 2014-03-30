@@ -63,7 +63,6 @@ public class MainActivity extends ActionBarActivity {
     private static String TAG = MainActivity.class.getSimpleName();
     public static String INTERNAL_STORAGE_FILENAME = "ModifyINGnotifications";
 
-    private static int PIN_LENGTH = 6;
     private static int SERVER_CHECK_INTERVAL = 5000; // Millisecs, time between server pulls
 
     private boolean updateNotificationsAdapter = false;
@@ -159,46 +158,6 @@ public class MainActivity extends ActionBarActivity {
         if(updateNotificationsAdapter){
             updateNotificationsAdapter = false;
         }
-    }
-
-    private void showPinDialog(final int selectedPosition, String title){
-        /* Ask for pin code to show notification details */
-        AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
-        alert.setTitle(title);
-        final EditText input = new EditText(MainActivity.this);
-        alert.setView(input);
-        input.setFilters(new InputFilter[]{
-                new InputFilter.LengthFilter(PIN_LENGTH),
-                DigitsKeyListener.getInstance(),
-        });
-        input.setInputType(InputType.TYPE_NUMBER_VARIATION_PASSWORD);
-        input.setTransformationMethod(new PasswordTransformationMethod());
-
-        alert.setPositiveButton("OK",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        String pin = input.getText().toString();
-                                /* Validate with pin dummy data because we can not access the
-                                * pin code of a user in the api */
-                        if(!pin.equals("") && Integer.parseInt(pin) < 500000){
-                                    /* Pin correct, show detailed information about */
-                            Notifiable notification = notificationAdapter.getItem(selectedPosition);
-                            notification.markAsRead();
-                            showNotificationDetails(notification);
-                        } else {
-                            showPinDialog(selectedPosition, "PIN incorrect");
-                        }
-                    }
-                }
-        );
-
-        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {}
-        });
-
-        // Digits only & use numeric soft-keyboard.
-        input.setKeyListener(DigitsKeyListener.getInstance());
-        alert.show();
     }
 
     private void showNotificationDetails(Notifiable notification){
