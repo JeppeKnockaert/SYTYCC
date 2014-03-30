@@ -1,4 +1,4 @@
-package com.sytycc.sytycc.app.layout.notifications;
+package com.sytycc.sytycc.app.layout.notificationss;
 
 /**
  * Created by Michaël on 29/03/14.

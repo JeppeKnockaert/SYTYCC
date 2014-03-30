@@ -31,7 +31,7 @@
             android:label="@string/title_activity_transaction" >
         </activity>
         <activity
-            android:name=".layout.notifications.NotificationsActivity"
+            android:name=".layout.notificationss.NotificationsActivity"
             android:label="@string/title_activity_notifications" >
         </activity>
     </application>
