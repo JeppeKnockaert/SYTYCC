@@ -5,6 +5,8 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
@@ -49,6 +51,7 @@ public class ProductsAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup viewGroup) {
+
         ViewHolder holder = null;
         final Product rowItem = (Product) getItem(position);
 
@@ -71,7 +74,6 @@ public class ProductsAdapter extends BaseAdapter {
         holder.ibanText.setText(rowItem.getIban());
         holder.newText.setText("0");
         holder.amountText.setText(""+rowItem.getBalance());
-
         return convertView;
     }
 }

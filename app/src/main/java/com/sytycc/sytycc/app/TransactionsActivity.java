@@ -7,6 +7,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -65,6 +66,7 @@ public class TransactionsActivity extends ActionBarActivity {
                 api.getProductTransactions(product.getUuid(),new APIListener() {
                     @Override
                     public void receiveAnswer(Object obj) {
+                        ((LinearLayout)transactionsListView.getParent()).removeView(findViewById(R.id.loadingTransactionsText));
                         List<Transaction> transactionList = (List<Transaction>) obj;
                         transactionsAdapter = new TransactionsAdapter(TransactionsActivity.this,transactionList);
                         transactionsListView.setAdapter(transactionsAdapter);

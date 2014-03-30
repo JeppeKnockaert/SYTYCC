@@ -18,8 +18,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TabHost;
+import android.widget.TextView;
 
 import com.sytycc.sytycc.app.data.Product;
 import com.sytycc.sytycc.app.layout.products.ProductsAdapter;
@@ -87,6 +89,7 @@ public class MainActivity extends ActionBarActivity {
                     api.getProducts(new APIListener() {
                         @Override
                         public void receiveAnswer(Object obj) {
+                            ((LinearLayout)productsListView.getParent()).removeView(findViewById(R.id.loadingProductsText));
                             List<Product> productList = (List<Product>) obj;
                             productsAdapter = new ProductsAdapter(MainActivity.this, productList);
                             productsListView.setAdapter(productsAdapter);
