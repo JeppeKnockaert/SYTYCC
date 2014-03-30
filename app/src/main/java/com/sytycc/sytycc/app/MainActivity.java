@@ -109,8 +109,8 @@ public class MainActivity extends ActionBarActivity {
         tabHost.addTab(spec3);
 
         /* If user arrived here cause of notification, open 2nd tab (notifications) */
-        if(getIntent().getExtras().getInt("TAB") == 2){
-            tabHost.setCurrentTab(2);
+        if(getIntent().hasExtra("TAB")){
+            tabHost.setCurrentTab(getIntent().getExtras().getInt("TAB"));
         }
     }
 
