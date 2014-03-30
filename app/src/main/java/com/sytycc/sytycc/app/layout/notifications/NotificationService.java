@@ -1,7 +1,6 @@
 package com.sytycc.sytycc.app.layout.notifications;
 
 import android.annotation.TargetApi;
-import android.app.ActivityManager;
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -74,6 +73,7 @@ public class NotificationService extends IntentService {
         mNotificationManager.notify(0, mBuilder.build());
     }
 
+
     @Override
     protected void onHandleIntent(Intent intent) {
         if (AccessAPI.getInstance().isSessionReady()) {
@@ -91,22 +91,25 @@ public class NotificationService extends IntentService {
                                 notification = new OverLimitTransactionNotification(trans);
                             }
                             if (notification != null) {
-                                System.out.println("test");
-                                if (!getApplicationContext().getPackageName().equalsIgnoreCase(((ActivityManager) getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE)).getRunningTasks(1).get(0).topActivity.getPackageName())) {
+                               // if (!getApplicationContext().getPackageName().equalsIgnoreCase(((ActivityManager) getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE)).getRunningTasks(1).get(0).topActivity.getPackageName())) {
                                     // App is not in the foreground
                                     showNotification(notification.getTitle(),notification.getMessage());
                                     IOManager.addNotificationToStorage(notification,getApplicationContext());
                                     MainActivity.getInstance().loadNotifications();
                                     //howNotification("Notification", "Reuse is still an homo");
-                                } else {
+                               // } else {
                                     // App is not in the foreground
-                                    showNotification(notification.getTitle(),notification.getMessage());
-                                    IOManager.addNotificationToStorage(notification,getApplicationContext());
-                                    MainActivity.getInstance().loadNotifications();
-                                    MainActivity.getInstance().setNotificationAmount(MainActivity.getInstance().getNotificationAmount());
+                               //     showNotification(notification.getTitle(),notification.getMessage());
+                               //     IOManager.addNotificationToStorage(notification,getApplicationContext());
+                               //     MainActivity.getInstance().loadNotifications();
+                               //     MainActivity.getInstance().setNotificationAmount(MainActivity.getInstance().getNotificationAmount());
                                     // Increment number in notifications tab name
-                                }
+                               // }
                             }
+                            else{
+                                showNotification("Payment surpasses limit", "A payment was made from your account that surpasses the limit you set.");
+                            }
+                            MainActivity.getInstance().cancelPulls();
                         }
                     }
                 }
