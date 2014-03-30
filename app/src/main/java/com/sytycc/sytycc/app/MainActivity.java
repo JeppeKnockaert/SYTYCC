@@ -38,6 +38,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TabHost;
@@ -78,6 +79,7 @@ public class MainActivity extends ActionBarActivity {
 
     private static MainActivity instance;
     private boolean pulling = false;
+    private int notificationAmount = 0;
 
 
     @Override
@@ -111,7 +113,11 @@ public class MainActivity extends ActionBarActivity {
         spec1.setIndicator(getString(R.string.home_tab));
 
         TabHost.TabSpec spec2=tabHost.newTabSpec("Notifications");
-        spec2.setIndicator(getString(R.string.notifications_tab));
+        /*ImageView notifyIcon = new ImageView(this);
+        notifyIcon.setImageResource(R.drawable.warning);
+        notifyIcon.setScaleType(ImageView.ScaleType.CENTER_INSIDE);*/
+        spec2.setIndicator("",getResources().getDrawable(R.drawable.warning));
+        //spec2.setIndicator(getString(R.string.notifications_tab));
         spec2.setContent(R.id.tab2);
 
         TabHost.TabSpec spec3=tabHost.newTabSpec("Settings");
@@ -264,11 +270,13 @@ public class MainActivity extends ActionBarActivity {
     protected void onSaveInstanceState(Bundle bundle) {
         super.onSaveInstanceState(bundle);
         bundle.putInt("currentTabNr", tabHost.getCurrentTab());
+        bundle.putInt("notificationAmount",notificationAmount);
     }
 
     protected void onRestoreInstanceState(Bundle bundle){
         super.onRestoreInstanceState(bundle);
         tabHost.setCurrentTab(bundle.getInt("currentTabNr"));
+        setNotificationAmount(bundle.getInt("notificationAmount"));
     }
 
     private void loadNotifications(){
@@ -408,5 +416,11 @@ public class MainActivity extends ActionBarActivity {
 
     public static MainActivity getInstance(){
         return instance;
+    }
+
+    public void setNotificationAmount(int amount){
+        this.notificationAmount = amount;
+        TextView title = (TextView) tabHost.getTabWidget().getChildAt(1).findViewById(android.R.id.title);
+        title.setText("" + (amount==0?"":amount));
     }
 }
