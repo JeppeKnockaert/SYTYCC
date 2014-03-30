@@ -31,7 +31,10 @@ import android.widget.TextView;
 
 import com.sytycc.sytycc.app.data.InfoNotification;
 import com.sytycc.sytycc.app.data.Notifiable;
+import com.sytycc.sytycc.app.data.OverLimitTransactionNotification;
 import com.sytycc.sytycc.app.data.Product;
+import com.sytycc.sytycc.app.data.Transaction;
+import com.sytycc.sytycc.app.data.TransactionNotifiable;
 import com.sytycc.sytycc.app.layout.notifications.NotificationAdapter;
 import com.sytycc.sytycc.app.layout.notifications.NotificationReceiver;
 import com.sytycc.sytycc.app.layout.notifications.NotificationService;
