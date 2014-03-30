@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.sytycc.sytycc.app.R;
+import com.sytycc.sytycc.app.data.Notification;
 
 import java.util.ArrayList;
 
