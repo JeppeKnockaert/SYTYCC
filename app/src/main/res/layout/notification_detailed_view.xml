@@ -4,56 +4,52 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <TableLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
 
-    ((TextView)d.findViewById(R.id.descriptionText)).setText(notification.getTransaction().getTypeDesc());
-    ((TextView)d.findViewById(R.id.descriptionText)).setText(notification.getTransaction().getEffectiveDate().toString());
-    ((TextView)d.findViewById(R.id.descriptionText)).setText(notification.getTransaction().getValDate().toString());
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Text"
-        android:id="@+id/notification_text" />
+        <TableRow
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Owner"
-        android:id="@+id/notification_owner" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Notification Title"
+                android:id="@+id/notification_title_label"
+                android:layout_column="0"
+                android:layout_weight="0.5"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Category"
-        android:id="@+id/notification_category" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:id="@+id/notification_title"
+                android:layout_column="1"
+                android:layout_weight="0.5"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Bank Name"
-        android:id="@+id/notification_bank_name" />
+        </TableRow>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Description"
-        android:id="@+id/notification_description" />
+        <TableRow
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Type"
-        android:id="@+id/notification_type" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Notification Text"
+                android:id="@+id/notification_text_label"
+                android:layout_column="0"
+                android:layout_weight="0.5"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Effective date"
-        android:id="@+id/notification_effective_date" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:id="@+id/notification_text"
+                android:layout_column="1"
+                android:layout_weight="0.5"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Val date"
-        android:id="@+id/notification_val_date" />
-
+        </TableRow>
+    </TableLayout>
 </LinearLayout>

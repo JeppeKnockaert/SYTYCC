@@ -32,7 +32,10 @@ import android.widget.TextView;
 
 import com.sytycc.sytycc.app.data.InfoNotification;
 import com.sytycc.sytycc.app.data.Notifiable;
+import com.sytycc.sytycc.app.data.OverLimitTransactionNotification;
 import com.sytycc.sytycc.app.data.Product;
+import com.sytycc.sytycc.app.data.Transaction;
+import com.sytycc.sytycc.app.data.TransactionNotifiable;
 import com.sytycc.sytycc.app.layout.notifications.NotificationAdapter;
 import com.sytycc.sytycc.app.layout.notifications.NotificationReceiver;
 import com.sytycc.sytycc.app.layout.notifications.NotificationService;
@@ -40,6 +43,11 @@ import com.sytycc.sytycc.app.layout.products.ProductsAdapter;
 import com.sytycc.sytycc.app.utilities.IOManager;
 
 import java.util.ArrayList;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+
 import java.util.List;
 import java.util.Stack;
 
@@ -149,10 +157,8 @@ public class MainActivity extends ActionBarActivity {
     protected void onResume() {
         super.onResume();
         if(updateNotificationsAdapter){
-            notificationAdapter.notifyAll();
             updateNotificationsAdapter = false;
         }
-
     }
 
     private void showPinDialog(final int selectedPosition, String title){
@@ -174,9 +180,11 @@ public class MainActivity extends ActionBarActivity {
                         String pin = input.getText().toString();
                                 /* Validate with pin dummy data because we can not access the
                                 * pin code of a user in the api */
-                        if (Integer.parseInt(pin) < 500000) {
-                                    /* Pin correct, show detailed information about  */
-
+                        if(!pin.equals("") && Integer.parseInt(pin) < 500000){
+                                    /* Pin correct, show detailed information about */
+                            Notifiable notification = notificationAdapter.getItem(selectedPosition);
+                            notification.markAsRead();
+                            showNotificationDetails(notification);
                         } else {
                             showPinDialog(selectedPosition, "PIN incorrect");
                         }
@@ -200,17 +208,24 @@ public class MainActivity extends ActionBarActivity {
         alert.setView(text);
 
         Dialog d = new Dialog(MainActivity.this);
+
         d.setTitle("Notification details");
-        d.setContentView(R.layout.notification_detailed_view);
-        ((TextView)d.findViewById(R.id.notification_text)).setText(notification.getMessage());
-        ((TextView)d.findViewById(R.id.notification_owner)).setText(notification.getTitle());
-        /* TODO uitbreiden met meer details */
-        /*
+
         if(notification instanceof InfoNotification){
-            InfoNotification infoNotification = (InfoNotification) notification;
-            ((TextView)d.findViewById(R.id.notification_text)).setText(infoNotification.);
+            d.setContentView(R.layout.notification_detailed_view);
+            ((TextView)d.findViewById(R.id.notification_title)).setText(notification.getTitle());
             ((TextView)d.findViewById(R.id.notification_text)).setText(notification.getMessage());
-        }*/
+        } else if (notification instanceof OverLimitTransactionNotification){
+            d.setContentView(R.layout.transaction_detailed);
+            Transaction t = ((TransactionNotifiable) notification).getTransaction();
+            ((TextView)d.findViewById(R.id.transaction_description)).setText(t.getDescription());
+            ((TextView)d.findViewById(R.id.transaction_val_date)).setText(t.getValDate().toString());
+            ((TextView)d.findViewById(R.id.transaction_effective_date)).setText(t.getEffectiveDate().toString());
+            ((TextView)d.findViewById(R.id.transaction_bank_name)).setText(t.getBankName().toString());
+            ((TextView)d.findViewById(R.id.transaction_type)).setText(t.getTypeDesc());
+            ((TextView)d.findViewById(R.id.transaction_product_uuid)).setText(t.getProductUuid());
+            ((TextView)d.findViewById(R.id.transaction_amount)).setText("" + t.getAmount());
+        }
         d.show();
         updateNotificationsAdapter = true;
     }
@@ -294,10 +309,13 @@ public class MainActivity extends ActionBarActivity {
         Notifiable n1 = new InfoNotification("Title 3","Reuse is nen homo 3");
         Notifiable n2 = new InfoNotification("Title 4","Reuse is nen homo 4");
         Notifiable n3 = new InfoNotification("Title 5","Reuse is nen homo 5");
+        Notifiable n4 = new OverLimitTransactionNotification(new Transaction("UID_555","ING Brussel","Test description","Overschrijving", 1337, new Date(), new Date()));
+
         n1.markAsRead();
         n2.markAsRead();
         n3.markAsRead();
 
+        notificationAdapter.add(n4);
         notificationAdapter.add(n1);
         notificationAdapter.add(n2);
         notificationAdapter.add(n3);
