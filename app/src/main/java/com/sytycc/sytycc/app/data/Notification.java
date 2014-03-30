@@ -20,7 +20,7 @@ public class Notification {
     private String message;
     private Category category;
     private String owner;
-
+    private boolean read;
     private Transaction transaction;
 
     public enum Category {
@@ -33,6 +33,15 @@ public class Notification {
         this.message = message;
         this.category = category;
         this.owner = owner;
+        this.read = false;
+    }
+
+    public boolean isRead() {
+        return read;
+    }
+
+    public void markAsRead() {
+        this.read = true;
     }
 
     public Transaction getTransaction() {
