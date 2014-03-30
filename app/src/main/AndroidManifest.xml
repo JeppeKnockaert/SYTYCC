@@ -14,6 +14,7 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+        <service android:name=".layout.notifications.NotificationService" />
         <activity
             android:name="com.sytycc.sytycc.app.MainActivity"
             android:label="@string/app_name" >
@@ -30,10 +31,6 @@
         <activity
             android:name="com.sytycc.sytycc.app.TransactionsActivity"
             android:label="@string/title_activity_transaction" >
-        </activity>
-        <activity
-            android:name=".layout.notifications.NotificationsActivity"
-            android:label="@string/title_activity_notifications" >
         </activity>
     </application>
 
