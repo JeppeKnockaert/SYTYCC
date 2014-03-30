@@ -14,6 +14,7 @@ import android.support.v4.app.NotificationCompat;
 import com.sytycc.sytycc.app.APIListener;
 import com.sytycc.sytycc.app.AccessAPI;
 import com.sytycc.sytycc.app.MainActivity;
+import com.sytycc.sytycc.app.PincodeActivity;
 import com.sytycc.sytycc.app.R;
 import com.sytycc.sytycc.app.data.Transaction;
 
@@ -40,9 +41,9 @@ public class NotificationService extends IntentService {
                         .setAutoCancel(true);
 
         // Creates an explicit intent for an Activity in your app
-        Intent resultIntent = new Intent(this, MainActivity.class);
+        Intent resultIntent = new Intent(this, PincodeActivity.class);
         // God immediately to the notifications tab
-        resultIntent.putExtra("TAB",2);
+        resultIntent.putExtra("TAB",1);
 
         // The stack builder object will contain an artificial back stack for the
         // started Activity.

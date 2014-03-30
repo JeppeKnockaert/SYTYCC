@@ -129,9 +129,10 @@ public class MainActivity extends ActionBarActivity {
         tabHost.addTab(spec2);
         tabHost.addTab(spec3);
 
+        System.out.println(getIntent().getIntExtra("TAG",1));
         /* If user arrived here cause of notification, open 2nd tab (notifications) */
-        if((getIntent() != null) && (getIntent().getExtras() != null) && (getIntent().getExtras().getInt("TAB") == 2)){
-            tabHost.setCurrentTab(2);
+        if((getIntent() != null) && (getIntent().getExtras() != null) && (getIntent().getExtras().getInt("TAB") == 1)){
+            tabHost.setCurrentTab(1);
         }
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -170,14 +171,15 @@ public class MainActivity extends ActionBarActivity {
                         String pin = input.getText().toString();
                                 /* Validate with pin dummy data because we can not access the
                                 * pin code of a user in the api */
-                        if(Integer.parseInt(pin) < 500000){
+                        if (Integer.parseInt(pin) < 500000) {
                                     /* Pin correct, show detailed information about  */
 
                         } else {
-                            showPinDialog(selectedPosition,"PIN incorrect");
+                            showPinDialog(selectedPosition, "PIN incorrect");
                         }
                     }
-                });
+                }
+        );
 
         alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {}
@@ -261,7 +263,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onSaveInstanceState(Bundle bundle) {
         super.onSaveInstanceState(bundle);
         bundle.putInt("currentTabNr", tabHost.getCurrentTab());
-        bundle.putInt("notificationAmount",notificationAmount);
+        bundle.putInt("notificationAmount", notificationAmount);
     }
 
     protected void onRestoreInstanceState(Bundle bundle){
