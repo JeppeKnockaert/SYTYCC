@@ -30,7 +30,7 @@
                 <LinearLayout
                     android:id="@+id/tab1"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="406dp"
                     android:contentDescription="HOME"
                     android:orientation="vertical">
 
@@ -45,6 +45,13 @@
                         android:layout_height="wrap_content"
                         android:id="@+id/productsListView" />
 
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="Loading products..."
+                        android:id="@+id/loadingProductsText"
+                        android:gravity="center" />
+
                 </LinearLayout>
 
 
@@ -54,12 +61,22 @@
                     android:layout_height="match_parent"
                     android:contentDescription="HOME">
 
+                    <ListView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/notificationsListView"
+                        android:background="@android:color/transparent"
+                        android:cacheColorHint="@android:color/transparent"
+                        android:divider="@android:color/transparent"/>
+
                     <TextView
                         android:id="@+id/textView2"
                         android:layout_width="204dp"
                         android:layout_height="match_parent"
                         android:paddingLeft="10dp"
-                        android:text="TAB 2" />
+                        android:text="TAB 2"
+                        android:cacheColorHint="@android:color/transparent"
+                        android:divider="@android:color/transparent"/>
 
                 </LinearLayout>
 
@@ -68,11 +85,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:contentDescription="HOME"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:cacheColorHint="@android:color/transparent"
+                    android:divider="@android:color/transparent">
 
                 </LinearLayout>
-
             </FrameLayout>
         </LinearLayout>
     </TabHost>
+
 </LinearLayout>

@@ -100,7 +100,7 @@ public class Notification {
 
         try {
             ois = new ObjectInputStream(context.openFileInput(filename));
-            oos = new ObjectOutputStream(context.openFileOutput(filename,Context.MODE_PRIVATE));
+            oos = new ObjectOutputStream(context.openFileOutput(filename, Context.MODE_PRIVATE));
             transactions = (Stack<Notification>)ois.readObject();
             transactions.push(notification);
             oos.writeObject(transactions);
