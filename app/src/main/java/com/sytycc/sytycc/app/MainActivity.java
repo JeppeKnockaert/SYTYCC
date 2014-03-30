@@ -8,6 +8,7 @@ import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -135,6 +136,10 @@ public class MainActivity extends ActionBarActivity {
             ((NotificationAdapter)notifications.getAdapter()).addNotification(new Notification("Notification","Reuse is nen homo"));*/
 
             return true;
+        }else if(id == R.id.action_cardstop){
+            Intent callIntent = new Intent(Intent.ACTION_CALL);
+            callIntent.setData(Uri.parse("tel:0495789995"));
+            startActivity(callIntent);
         }
         return super.onOptionsItemSelected(item);
     }
