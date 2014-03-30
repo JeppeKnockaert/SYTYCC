@@ -49,7 +49,7 @@ public class NotificationAdapter extends ArrayAdapter<Notification> {
 
         // 4. Set the text for textView
         labelView.setText(notificationsArrayList.get(position).getTitle());
-        valueView.setText(notificationsArrayList.get(position).getText());
+        valueView.setText(notificationsArrayList.get(position).getMessage());
 
 
         /* TODO make difference between read and unread notifications more appealing */
