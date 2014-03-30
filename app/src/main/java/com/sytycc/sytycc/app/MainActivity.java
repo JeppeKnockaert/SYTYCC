@@ -5,40 +5,25 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-
-import com.sytycc.sytycc.app.data.Transaction;
-import com.sytycc.sytycc.app.data.Notifiable;
-
-import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
 import android.content.Context;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
-
 import android.content.DialogInterface;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.method.DigitsKeyListener;
 import android.text.method.PasswordTransformationMethod;
-import android.util.Log;
-
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TabHost;
@@ -57,11 +42,12 @@ import com.sytycc.sytycc.app.layout.products.ProductsAdapter;
 import com.sytycc.sytycc.app.utilities.IOManager;
 
 import java.util.ArrayList;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 
 
@@ -90,8 +76,8 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         instance = this;
 
-        /* Start service to pull from server and send notifications when the app is
-        * running in the background */
+         /* Start service to pull from server and send notifications when the app is
+                     * running in the background */
         Intent intent = new Intent(this, NotificationService.class);
         startService(intent);
 
@@ -113,19 +99,19 @@ public class MainActivity extends ActionBarActivity {
 
         TabHost.TabSpec spec1=tabHost.newTabSpec("Home");
         spec1.setContent(R.id.tab1);
-        spec1.setIndicator(getString(R.string.home_tab));
+        spec1.setIndicator("",getResources().getDrawable(R.drawable.home_white));
 
         TabHost.TabSpec spec2=tabHost.newTabSpec("Notifications");
         /*ImageView notifyIcon = new ImageView(this);
         notifyIcon.setImageResource(R.drawable.warning);
         notifyIcon.setScaleType(ImageView.ScaleType.CENTER_INSIDE);*/
-        spec2.setIndicator("",getResources().getDrawable(R.drawable.warning));
+        spec2.setIndicator("",getResources().getDrawable(R.drawable.warning_white));
         //spec2.setIndicator(getString(R.string.notifications_tab));
         spec2.setContent(R.id.tab2);
 
         TabHost.TabSpec spec3=tabHost.newTabSpec("Settings");
         spec3.setContent(R.id.tab3);
-        spec3.setIndicator(getString(R.string.settings_tab));
+        spec3.setIndicator("",getResources().getDrawable(R.drawable.settings_white));
 
         /* show settings fragment in settings tab */
         FragmentManager fragmentManager = getFragmentManager();
@@ -140,7 +126,8 @@ public class MainActivity extends ActionBarActivity {
         notificationsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, final int i, long l) {
-                showPinDialog(i, "Insert PIN code");
+                showNotificationDetails(notificationAdapter.getItem(i));
+                //showPinDialog(i, "Insert PIN code");
             }
         });
         notificationsListView.setAdapter(notificationAdapter);
@@ -150,9 +137,10 @@ public class MainActivity extends ActionBarActivity {
         tabHost.addTab(spec2);
         tabHost.addTab(spec3);
 
+        System.out.println(getIntent().getIntExtra("TAG",1));
         /* If user arrived here cause of notification, open 2nd tab (notifications) */
-        if((getIntent() != null) && (getIntent().getExtras() != null) && (getIntent().getExtras().getInt("TAB") == 2)){
-            tabHost.setCurrentTab(2);
+        if((getIntent() != null) && (getIntent().getExtras() != null) && (getIntent().getExtras().getInt("TAB") == 1)){
+            tabHost.setCurrentTab(1);
         }
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -195,10 +183,11 @@ public class MainActivity extends ActionBarActivity {
                             notification.markAsRead();
                             showNotificationDetails(notification);
                         } else {
-                            showPinDialog(selectedPosition,"PIN incorrect");
+                            showPinDialog(selectedPosition, "PIN incorrect");
                         }
                     }
-                });
+                }
+        );
 
         alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {}
@@ -245,8 +234,7 @@ public class MainActivity extends ActionBarActivity {
             api.init(MainActivity.this,new SessionListener() {
                 @Override
                 public void sessionReady() {
-                    // For testing purposes
-                    new notificationFetcher().execute("");
+                    // Fetch products
                     api.getProducts(new APIListener() {
                         @Override
                         public void receiveAnswer(Object obj) {
@@ -290,7 +278,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onSaveInstanceState(Bundle bundle) {
         super.onSaveInstanceState(bundle);
         bundle.putInt("currentTabNr", tabHost.getCurrentTab());
-        bundle.putInt("notificationAmount",notificationAmount);
+        bundle.putInt("notificationAmount", notificationAmount);
     }
 
     protected void onRestoreInstanceState(Bundle bundle){
@@ -335,86 +323,6 @@ public class MainActivity extends ActionBarActivity {
         /* Write notification(s) to file */
 
         //writeNotificationsToFile(notification);
-    }
-
-    private class notificationFetcher extends AsyncTask<String, Void, Void>{
-
-        private int done = 0;
-
-        @Override
-        protected Void doInBackground(String... strings) {
-            final AccessAPI api = AccessAPI.getInstance();
-            api.init(MainActivity.this,new SessionListener() {
-                @Override
-                public void sessionReady() {
-                    api.getProducts(new APIListener() {
-                        @Override
-                        public void receiveAnswer(Object obj) {
-                            final List<Product> productList = (List<Product>) obj;
-                            final Map<String, List<Transaction>> transactionList = new HashMap<String, List<Transaction>>();
-                            for (final Product product : productList){
-                                api.getProductTransactions(product.getUuid(),new APIListener() {
-                                    @Override
-                                    public void receiveAnswer(Object obj) {
-                                        transactionList.put(product.getUuid(), (List<Transaction>) obj);
-                                        if (transactionList.size() == productList.size()){
-                                            Stack<Transaction> toadd = retrieveNewTransactions(transactionList);
-                                            while (toadd != null && !toadd.empty()){
-                                                Transaction transaction = toadd.pop();
-                                                OverLimitTransactionNotification ol = new OverLimitTransactionNotification(transaction);
-                                                notificationAdapter.addNotification(ol);
-                                            }
-                                        }
-                                    }
-                                });
-                            }
-                        }
-                    });
-                }
-            });
-            return null;
-        }
-
-        private Stack<Transaction> retrieveNewTransactions(Map<String, List<Transaction>> transactions){
-            Stack<Notifiable> notifications = IOManager.fetchNotificationsFromStorage(MainActivity.this);
-            Stack<Transaction> toadd = new Stack<Transaction>();
-            if (notifications == null || notifications.isEmpty()){
-                Stack<Transaction> transactionstack = new Stack<Transaction>();
-                for (Map.Entry<String, List<Transaction>> entry : transactions.entrySet()){
-                    for (Transaction transaction : entry.getValue()){
-                        transactionstack.push(transaction);
-                    }
-                }
-                return transactionstack;
-            }
-            else {
-                for (Map.Entry<String, List<Transaction>> entry : transactions.entrySet()) {
-                    Transaction mostrecentnotification = null;
-                    List<Transaction> transactionlist = entry.getValue();
-                    Iterator<Notifiable> it = notifications.iterator();
-                    while (it.hasNext()) {
-                        Notifiable notification = it.next();
-                        if (notification instanceof TransactionNotifiable) {
-                            TransactionNotifiable transnotification = (TransactionNotifiable) notification;
-                            if (transnotification.getTransaction().getProductUuid().equals(entry.getKey())) {
-                                mostrecentnotification = transnotification.getTransaction();
-                            }
-                        }
-                    }
-                    int i = 0;
-                    boolean found = false;
-                    while (i < transactionlist.size() && !found) {
-                        Transaction currtransaction = transactionlist.get(i);
-                        if (!mostrecentnotification.equals(currtransaction)) {
-                            toadd.push(currtransaction);
-                        } else {
-                            found = true;
-                        }
-                    }
-                }
-                return toadd;
-            }
-        }
     }
 
     public void schedulePulls() {

@@ -17,19 +17,24 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <service android:name=".layout.notifications.NotificationService" />
-        <receiver
+        <receiver android:enabled="true"
             android:name=".layout.notifications.NotificationReceiver"
             android:process=":remote" >
         </receiver>
 
         <activity
-            android:name="com.sytycc.sytycc.app.MainActivity"
+            android:name="com.sytycc.sytycc.app.PincodeActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <activity
+            android:name="com.sytycc.sytycc.app.MainActivity"
+            android:label="@string/app_name" >
         </activity>
         <activity
             android:name=".AccountSettingsActivity"

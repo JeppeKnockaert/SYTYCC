@@ -60,7 +60,7 @@ public class TransactionsActivity extends ActionBarActivity {
         amountText.setText(""+product.getBalance());
 
         List<Transaction> transactionList = new ArrayList<Transaction>();
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         final AccessAPI api = AccessAPI.getInstance();
         api.init(this,new SessionListener() {
             @Override
@@ -84,7 +84,7 @@ public class TransactionsActivity extends ActionBarActivity {
                 Dialog d = new Dialog(TransactionsActivity.this);
                 d.setTitle("Transaction details");
                 d.setContentView(R.layout.transaction_detailed_view);
-                ((TextView)d.findViewById(R.id.dateText)).setText(((Transaction)transactionsAdapter.getItem(i)).getEffectiveDate().toString());
+                ((TextView)d.findViewById(R.id.dateText)).setText(sdf.format(((Transaction)transactionsAdapter.getItem(i)).getEffectiveDate()));
                 ((TextView)d.findViewById(R.id.bankNumberText)).setText(((Transaction)transactionsAdapter.getItem(i)).getBankName());
                 ((TextView)d.findViewById(R.id.amountText)).setText(""+((Transaction)transactionsAdapter.getItem(i)).getAmount());
                 ((TextView)d.findViewById(R.id.descriptionText)).setText(((Transaction)transactionsAdapter.getItem(i)).getDescription());
