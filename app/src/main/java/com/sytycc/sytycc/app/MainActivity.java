@@ -1,8 +1,12 @@
 package com.sytycc.sytycc.app;
 
 import android.annotation.TargetApi;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+
+import com.sytycc.sytycc.app.data.Transaction;
 import com.sytycc.sytycc.app.layout.notifications.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -15,14 +19,18 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.ActionBarActivity;
+import android.text.InputFilter;
+import android.text.method.DigitsKeyListener;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TabHost;
+import android.widget.TextView;
 
 import com.sytycc.sytycc.app.data.Product;
 import com.sytycc.sytycc.app.layout.notifications.NotificationAdapter;
@@ -45,6 +53,8 @@ public class MainActivity extends ActionBarActivity {
 
     private static String TAG = MainActivity.class.getSimpleName();
     public static String INTERNAL_STORAGE_FILENAME = "ModifyINGnotifications";
+    private static int PIN_LENGTH = 4;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +108,18 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 /* Ask for pin code to show notification details */
+                AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
+                alert.setTitle("Insert PIN code");
+                final EditText input = new EditText(MainActivity.this);
+                alert.setView(input);
+                input.setFilters(new InputFilter[]{
+                        new InputFilter.LengthFilter(PIN_LENGTH),
+                        DigitsKeyListener.getInstance(),
+                });
+
+                // Digits only & use numeric soft-keyboard.
+                input.setKeyListener(DigitsKeyListener.getInstance());
+                alert.show();
             }
         });
         notificationsListView.setAdapter(notificationAdapter);
@@ -108,7 +130,7 @@ public class MainActivity extends ActionBarActivity {
         tabHost.addTab(spec3);
 
         /* If user arrived here cause of notification, open 2nd tab (notifications) */
-        if(getIntent().getExtras().getInt("TAB") == 2){
+        if((getIntent() != null) && (getIntent().getExtras() != null) && (getIntent().getExtras().getInt("TAB") == 2)){
             tabHost.setCurrentTab(2);
         }
     }
