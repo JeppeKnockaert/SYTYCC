@@ -234,6 +234,8 @@ public class MainActivity extends ActionBarActivity {
             Intent callIntent = new Intent(Intent.ACTION_CALL);
             callIntent.setData(Uri.parse("tel:0495789995"));
             startActivity(callIntent);
+        }else if(id == R.id.action_transfer){
+            transfer();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -323,5 +325,10 @@ public class MainActivity extends ActionBarActivity {
         this.notificationAmount = amount;
         TextView title = (TextView) tabHost.getTabWidget().getChildAt(1).findViewById(android.R.id.title);
         title.setText("" + (amount==0?"":amount));
+    }
+
+
+    public void transfer(){
+        System.out.println("transfer");
     }
 }
