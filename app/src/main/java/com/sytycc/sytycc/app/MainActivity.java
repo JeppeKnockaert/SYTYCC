@@ -26,6 +26,7 @@ import android.widget.TabHost;
 
 import com.sytycc.sytycc.app.data.Product;
 import com.sytycc.sytycc.app.layout.notifications.NotificationAdapter;
+import com.sytycc.sytycc.app.layout.notifications.NotificationService;
 import com.sytycc.sytycc.app.layout.products.ProductsAdapter;
 
 import java.io.FileOutputStream;
@@ -48,6 +49,11 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        /* Start service to pull from server and send notifications when the app is
+        * running in the background */
+        Intent intent = new Intent(this, NotificationService.class);
+        startService(intent);
 
         PreferenceManager.setDefaultValues(this, R.xml.preferences, true);
         setContentView(R.layout.activity_main);
@@ -87,13 +93,24 @@ public class MainActivity extends ActionBarActivity {
         /* Init notifications
         * TODO afwerken */
         loadNotifications();
-        ListView notifications = (ListView) findViewById(R.id.notificationsListView);
-        notifications.setAdapter(notificationAdapter);
+        ListView notificationsListView = (ListView) findViewById(R.id.notificationsListView);
+        notificationsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                /* Ask for pin code to show notification details */
+            }
+        });
+        notificationsListView.setAdapter(notificationAdapter);
         notificationAdapter.setNotifyOnChange(true);
 
         tabHost.addTab(spec1);
         tabHost.addTab(spec2);
         tabHost.addTab(spec3);
+
+        /* If user arrived here cause of notification, open 2nd tab (notifications) */
+        if(getIntent().getExtras().getInt("TAB") == 2){
+            tabHost.setCurrentTab(2);
+        }
     }
 
     private class LoadProducts extends AsyncTask<String, Void, Void>{
@@ -133,12 +150,6 @@ public class MainActivity extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_settings) {
-            // Testing Purposes
-
-            /*showNotification(R.drawable.notification_white,getString(R.string.notification_example_title),getString(R.string.notification_example_text));
-            ListView notifications = (ListView) findViewById(R.id.listView);
-            ((NotificationAdapter)notifications.getAdapter()).addNotification(new Notification("Notification","Reuse is nen homo"));*/
-
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -152,42 +163,6 @@ public class MainActivity extends ActionBarActivity {
     protected void onRestoreInstanceState(Bundle bundle){
         super.onRestoreInstanceState(bundle);
         tabHost.setCurrentTab(bundle.getInt("currentTabNr"));
-    }
-
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    public void showNotification(int imageId, String title, String text) {
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this)
-                        .setSmallIcon(imageId)
-                        .setContentTitle(title)
-                        .setContentText(text)
-                        .setAutoCancel(true);
-
-        // Creates an explicit intent for an Activity in your app
-        Intent resultIntent = new Intent(this, MainActivity.class);
-
-        // The stack builder object will contain an artificial back stack for the
-        // started Activity.
-        // This ensures that navigating backward from the Activity leads out of
-        // your application to the Home screen.
-
-        PendingIntent resultPendingIntent;
-            TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-            // Adds the back stack for the Intent (but not the Intent itself)
-            stackBuilder.addParentStack(MainActivity.class);
-            // Adds the Intent that starts the Activity to the top of the stack
-            stackBuilder.addNextIntent(resultIntent);
-            resultPendingIntent =
-                    stackBuilder.getPendingIntent(
-                            0,
-                            PendingIntent.FLAG_UPDATE_CURRENT
-                    );
-
-        mBuilder.setContentIntent(resultPendingIntent);
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        // mId allows you to update the notification later on.
-        mNotificationManager.notify(0, mBuilder.build());
     }
 
     private void loadNotifications(){
