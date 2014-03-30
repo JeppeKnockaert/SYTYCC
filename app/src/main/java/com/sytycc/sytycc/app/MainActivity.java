@@ -8,6 +8,7 @@ import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -113,8 +114,8 @@ public class MainActivity extends ActionBarActivity {
         tabHost.addTab(spec3);
 
         /* If user arrived here cause of notification, open 2nd tab (notifications) */
-        if(getIntent().getExtras().getInt("TAB") == 2){
-            tabHost.setCurrentTab(2);
+        if(getIntent().hasExtra("TAB")){
+            tabHost.setCurrentTab(getIntent().getExtras().getInt("TAB"));
         }
     }
 
@@ -159,6 +160,10 @@ public class MainActivity extends ActionBarActivity {
             // Testing Purposes
             showNotification(R.drawable.notification,getString(R.string.notification_example_title),getString(R.string.notification_example_text));
             return true;
+        }else if(id == R.id.action_cardstop){
+            Intent callIntent = new Intent(Intent.ACTION_CALL);
+            callIntent.setData(Uri.parse("tel:0495789995"));
+            startActivity(callIntent);
         }
         return super.onOptionsItemSelected(item);
     }

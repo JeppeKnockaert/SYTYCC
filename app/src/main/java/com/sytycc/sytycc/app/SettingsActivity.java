@@ -2,6 +2,8 @@ package com.sytycc.sytycc.app;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceFragment;
 import android.support.v7.app.ActionBarActivity;
@@ -37,6 +39,10 @@ public class SettingsActivity extends ActionBarActivity {
         int id = item.getItemId();
         if (id == R.id.action_settings) {
             return true;
+        }else if(id == R.id.action_cardstop){
+            Intent callIntent = new Intent(Intent.ACTION_CALL);
+            callIntent.setData(Uri.parse("tel:0495789995"));
+            startActivity(callIntent);
         }
         return super.onOptionsItemSelected(item);
     }
