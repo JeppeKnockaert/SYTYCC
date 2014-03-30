@@ -45,8 +45,9 @@ import java.util.Stack;
 
 public class MainActivity extends ActionBarActivity {
 
-    private TabHost tabHost;
+    public TabHost tabHost;
     private ListView productsListView;
+    private ListView notificationsListView;
     private ProductsAdapter productsAdapter;
     private NotificationAdapter notificationAdapter;
 
@@ -56,6 +57,7 @@ public class MainActivity extends ActionBarActivity {
     private static int PIN_LENGTH = 6;
     private static int SERVER_CHECK_INTERVAL = 5000; // Millisecs, time between server pulls
 
+    private boolean updateNotificationsAdapter = false;
     private static MainActivity instance;
     private boolean pulling = false;
     private int notificationAmount = 0;
@@ -105,14 +107,13 @@ public class MainActivity extends ActionBarActivity {
         fragmentTransaction.add(R.id.tab3, fragment);
         fragmentTransaction.commit();
 
-        /* Init notifications
-        * TODO afwerken */
+        /* Init notifications*/
         loadNotifications();
-        ListView notificationsListView = (ListView) findViewById(R.id.notificationsListView);
+        notificationsListView = (ListView) findViewById(R.id.notificationsListView);
         notificationsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, final int i, long l) {
-                showPinDialog(i,"Insert PIN code");
+                showPinDialog(i, "Insert PIN code");
             }
         });
         notificationsListView.setAdapter(notificationAdapter);
@@ -126,6 +127,22 @@ public class MainActivity extends ActionBarActivity {
         if((getIntent() != null) && (getIntent().getExtras() != null) && (getIntent().getExtras().getInt("TAB") == 2)){
             tabHost.setCurrentTab(2);
         }
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if(prefs.getBoolean("pref_key_notifications_enabled", false)){
+            /* Start periodic checks */
+            schedulePulls();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(updateNotificationsAdapter){
+            notificationAdapter.notifyAll();
+            updateNotificationsAdapter = false;
+        }
+
     }
 
     private void showPinDialog(final int selectedPosition, String title){
@@ -147,15 +164,14 @@ public class MainActivity extends ActionBarActivity {
                         String pin = input.getText().toString();
                                 /* Validate with pin dummy data because we can not access the
                                 * pin code of a user in the api */
-                        if (Integer.parseInt(pin) < 500000) {
+                        if(Integer.parseInt(pin) < 500000){
                                     /* Pin correct, show detailed information about  */
                             showNotificationDetails(notificationAdapter.getItem(selectedPosition));
                         } else {
-                            showPinDialog(selectedPosition, "PIN incorrect");
+                            showPinDialog(selectedPosition,"PIN incorrect");
                         }
                     }
-                }
-        );
+                });
 
         alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {}
@@ -185,6 +201,7 @@ public class MainActivity extends ActionBarActivity {
             ((TextView)d.findViewById(R.id.notification_text)).setText(notification.getMessage());
         }*/
         d.show();
+        updateNotificationsAdapter = true;
     }
 
     private void bootService(){

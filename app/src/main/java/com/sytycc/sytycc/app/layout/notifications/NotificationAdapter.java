@@ -1,7 +1,9 @@
 package com.sytycc.sytycc.app.layout.notifications;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Typeface;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -51,14 +53,15 @@ public class NotificationAdapter extends ArrayAdapter<Notifiable> {
         labelView.setText(notificationsArrayList.get(position).getTitle());
         valueView.setText(notificationsArrayList.get(position).getMessage());
 
-
-        /* TODO make difference between read and unread notifications more appealing */
-
+        Log.i("diomaijeaioef",""+notificationsArrayList.get(position).isRead());
         if(notificationsArrayList.get(position).isRead()){
             valueView2.setVisibility(View.INVISIBLE);
+            labelView.setTypeface(Typeface.DEFAULT);
         } else {
+            valueView2.setVisibility(View.VISIBLE);
             labelView.setTypeface(Typeface.DEFAULT_BOLD);
         }
+        rowView.setBackgroundColor(Color.TRANSPARENT);
 
         // 5. return rowView
         return rowView;
