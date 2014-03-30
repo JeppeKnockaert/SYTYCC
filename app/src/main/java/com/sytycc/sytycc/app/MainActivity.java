@@ -4,17 +4,34 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+
+import com.sytycc.sytycc.app.data.Transaction;
+import com.sytycc.sytycc.app.data.Notifiable;
+
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
+import android.content.Context;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+
 import android.content.DialogInterface;
+
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.method.DigitsKeyListener;
 import android.text.method.PasswordTransformationMethod;
+import android.util.Log;
+
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,6 +49,7 @@ import com.sytycc.sytycc.app.data.Product;
 import com.sytycc.sytycc.app.data.Transaction;
 import com.sytycc.sytycc.app.data.TransactionNotifiable;
 import com.sytycc.sytycc.app.layout.notifications.NotificationAdapter;
+import com.sytycc.sytycc.app.layout.notifications.NotificationReceiver;
 import com.sytycc.sytycc.app.layout.notifications.NotificationService;
 import com.sytycc.sytycc.app.layout.products.ProductsAdapter;
 import com.sytycc.sytycc.app.utilities.IOManager;
@@ -53,19 +71,25 @@ public class MainActivity extends ActionBarActivity {
 
     private static String TAG = MainActivity.class.getSimpleName();
     public static String INTERNAL_STORAGE_FILENAME = "ModifyINGnotifications";
+
     private static int PIN_LENGTH = 6;
+    private static int SERVER_CHECK_INTERVAL = 5000; // Millisecs, time between server pulls
+
+    private static MainActivity instance;
+    private boolean pulling = false;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        instance = this;
 
         /* Start service to pull from server and send notifications when the app is
         * running in the background */
         Intent intent = new Intent(this, NotificationService.class);
         startService(intent);
 
-        PreferenceManager.setDefaultValues(this, R.xml.preferences, true);
+        PreferenceManager.setDefaultValues(this, R.xml.preferences_account, true);
         setContentView(R.layout.activity_main);
 
         productsListView = (ListView) findViewById(R.id.productsListView);
@@ -96,7 +120,7 @@ public class MainActivity extends ActionBarActivity {
         /* show settings fragment in settings tab */
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        SettingsFragment fragment = new SettingsFragment();
+        NotificationSettingsFragment fragment = new NotificationSettingsFragment();
         fragmentTransaction.add(R.id.tab3, fragment);
         fragmentTransaction.commit();
 
@@ -120,6 +144,12 @@ public class MainActivity extends ActionBarActivity {
         /* If user arrived here cause of notification, open 2nd tab (notifications) */
         if((getIntent() != null) && (getIntent().getExtras() != null) && (getIntent().getExtras().getInt("TAB") == 2)){
             tabHost.setCurrentTab(2);
+        }
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if(prefs.getBoolean("pref_key_notifications_enabled", false)){
+            /* Start periodic checks */
+            schedulePulls();
         }
     }
 
@@ -220,7 +250,7 @@ public class MainActivity extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_settings) {
-            startActivity(new Intent(this, SettingsActivity.class));
+            startActivity(new Intent(this, AccountSettingsActivity.class));
             return true;
         }else if(id == R.id.action_cardstop){
             Intent callIntent = new Intent(Intent.ACTION_CALL);
@@ -355,4 +385,34 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
+    public void schedulePulls() {
+        if(!pulling){
+            Intent intent = new Intent(getApplicationContext(), NotificationReceiver.class);
+            // Create a PendingIntent to be triggered when the alarm goes off
+            final PendingIntent pIntent = PendingIntent.getBroadcast(this, NotificationReceiver.REQUEST_CODE,
+                    intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+            long firstMillis = System.currentTimeMillis();
+            int intervalMillis = SERVER_CHECK_INTERVAL;
+            AlarmManager alarm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+            alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, firstMillis, intervalMillis, pIntent);
+            pulling = true;
+        }
+    }
+
+    public void cancelPulls() {
+        if(pulling){
+            Intent intent = new Intent(getApplicationContext(), NotificationReceiver.class);
+            final PendingIntent pIntent = PendingIntent.getBroadcast(this, NotificationReceiver.REQUEST_CODE,
+                    intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            AlarmManager alarm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+            alarm.cancel(pIntent);
+            pulling = false;
+        }
+
+    }
+
+    public static MainActivity getInstance(){
+        return instance;
+    }
 }

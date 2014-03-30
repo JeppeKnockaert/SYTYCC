@@ -3,7 +3,7 @@
 
     <string name="app_name">SYTYCC</string>
     <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_settings">Account settings</string>
     <string name="usercategory">User settings</string>
     <string name="pref_key_username_title">Username</string>
     <string name="pref_key_username_default">67957657V</string>
@@ -17,5 +17,15 @@
     <string name="notifications_tab">Notifications</string>
     <string name="settings_tab">Settings</string>
     <string name="title_activity_notifications">NotificationsActivity</string>
+    <string name="category_balance">Balance</string>
+    <string name="pref_key_balancemin">Notify on balance lower than</string>
+    <string name="pref_key_balancemin_default">100</string>
+    <string name="enabledString">enabled</string>
+    <string name="category_notifications_enable">General</string>
+    <string name="category_general">General</string>
+    <string name="category_sendmin">Sending notifications</string>
+    <string name="category_send">Sending notifications</string>
+    <string name="pref_key_sendmin">Notify when sending more than</string>
+    <string name="pref_key_sendmin_default">100</string>
 
 </resources>
