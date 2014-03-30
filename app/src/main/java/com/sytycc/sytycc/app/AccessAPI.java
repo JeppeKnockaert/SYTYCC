@@ -22,10 +22,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -40,12 +36,13 @@ import java.util.Map;
  */
 public class AccessAPI{
 
-    private String apikey = "rBCINWz7udeyGBNIWrEgkj3Y8NrWZkoK";
+    private String apikey = "93ub7fAkQmG170m90hdOxbmlSPA3MTHY";
     private String apiurl = "https://apisandbox.ingdirect.es";
     private Context context;
-    private String username;
+    private String username = "55663504P";
     private String birthday;
     private String sessionid = null;
+    private boolean sessionrequested = false;
 
     private final static AccessAPI accessapi = new AccessAPI();
 
@@ -58,15 +55,18 @@ public class AccessAPI{
     }
 
     public void init(Context ctxt, final SessionListener listener){
-        // Read settings
-        context = ctxt;
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(ctxt);
-        username = sharedPref.getString("pref_key_username",null);
-        birthday = sharedPref.getString("pref_key_birthday",null);
-        requestTicket(listener);
+        if (!sessionrequested) {
+            // Read settings
+            context = ctxt;
+            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(ctxt);
+            //username = sharedPref.getString("pref_key_username", null);
+            birthday = sharedPref.getString("pref_key_birthday", null);
+            requestTicket(listener);
+        }
     }
 
     private void requestTicket(final SessionListener listener){
+        sessionrequested = true;
         RequestQueue queue = Volley.newRequestQueue(context);
         String url = getAPIURL("/openlogin/rest/ticket");
 
@@ -93,14 +93,8 @@ public class AccessAPI{
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                if (error.networkResponse.statusCode == 502){
-                    readCookieFromFile();
-                    listener.sessionReady();
-                }
-                else{
-                    System.out.println("66:"+error);
-                }
-
+                sessionrequested = false;
+                System.out.println("66:"+error);
             }
         });
         queue.add(jsObjRequest);
@@ -114,11 +108,13 @@ public class AccessAPI{
             @Override
             public void onResponse(String response) {
                 // Left empty
+                sessionrequested = false;
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 System.out.println("97: "+error);
+                sessionrequested = false;
             }
         }){
             @Override
@@ -127,7 +123,7 @@ public class AccessAPI{
                 String cookie = response.headers.get("Set-Cookie");
                 String[] splitCookie = cookie.split(";");
                 sessionid = splitCookie[0];
-                writeCookieToFile();
+                //writeCookieToFile();
                 listener.sessionReady();
                 return resp;
             }
@@ -144,41 +140,63 @@ public class AccessAPI{
         queue.add(strRequest);
     }
 
-    private void writeCookieToFile(){
-        // Save cookie in file
-        String filename = "cookie";
-        File cookie = new File(context.getFilesDir().getPath()+"/cookie");
-        if (!cookie.exists()){
-            ObjectOutputStream oos = null;
-            try {
-                oos = new ObjectOutputStream(context.openFileOutput(filename, Context.MODE_PRIVATE));
-                oos.writeUTF(sessionid);
-                oos.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+    public void destroySession(){
+        RequestQueue queue = Volley.newRequestQueue(context);
+        StringRequest strRequest = new StringRequest(Request.Method.PUT,getAPIURL("/openapi/rest/session"),new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                System.out.println("Session destroyed");
+                sessionid = null;
             }
-        }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println("97: "+error);
+            }
+        }){
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                return addSessionCookie(super.getHeaders());
+            }
+        };
+        queue.add(strRequest);
     }
+
+//    private void writeCookieToFile(){
+//        // Save cookie in file
+//        String filename = "cookie";
+//        File cookie = new File(context.getFilesDir().getPath()+"/cookie");
+//        if (!cookie.exists()){
+//            ObjectOutputStream oos = null;
+//            try {
+//                oos = new ObjectOutputStream(context.openFileOutput(filename, Context.MODE_PRIVATE));
+//                oos.writeUTF(sessionid);
+//                oos.close();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
 
     public boolean isSessionReady(){
-        return sessionid != null;
+        return !sessionrequested;
     }
 
-    private void readCookieFromFile(){
-        // Read cookie from file
-        String filename = "cookie";
-        File cookie = new File(context.getFilesDir().getPath()+"/cookie");
-        if (cookie.exists()){
-            ObjectInputStream ois = null;
-            try {
-                ois = new ObjectInputStream(context.openFileInput(filename));
-                this.sessionid = ois.readUTF();
-                ois.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+//    private void readCookieFromFile(){
+//        // Read cookie from file
+//        String filename = "cookie";
+//        File cookie = new File(context.getFilesDir().getPath()+"/cookie");
+//        if (cookie.exists()){
+//            ObjectInputStream ois = null;
+//            try {
+//                ois = new ObjectInputStream(context.openFileInput(filename));
+//                this.sessionid = ois.readUTF();
+//                ois.close();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
 
     private void getRequest(String requestpath, Map<String, String> arguments, final Response.Listener responselistener, boolean object){
         RequestQueue queue = Volley.newRequestQueue(context);
@@ -219,6 +237,9 @@ public class AccessAPI{
                 || headers.equals(Collections.emptyMap())) {
             headers = new HashMap<String, String>();
         }
+        else{
+            System.out.println("headers");
+        }
         headers.put("Cookie", sessionid);
         return headers;
     }
@@ -241,8 +262,9 @@ public class AccessAPI{
                 for (int i = 0; i < productarray.length(); i++) {
                     try {
                         JSONObject productobj = productarray.getJSONObject(i);
+                        //System.out.println(productobj.toString());
                         Product prod = new Product(productobj.getString("name"), productobj.getString("productNumber"),
-                        productobj.getInt("bank"), productobj.getString("iban"), productobj.getString("bic"),
+                        -1, productobj.getString("iban"), productobj.getString("bic"),
                         productobj.getString("openingDate"), productobj.getInt("type"), -1,
                         productobj.getDouble("availableBalance"), productobj.getDouble("balance"), productobj.getString("uuid"));
                         if (productobj.has("subtype")){
