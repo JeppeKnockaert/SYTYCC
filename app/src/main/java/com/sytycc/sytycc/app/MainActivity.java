@@ -14,17 +14,27 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.TextView;
 
+import com.sytycc.sytycc.app.layout.notifications.Notification;
+import com.sytycc.sytycc.app.layout.notifications.NotificationAdapter;
 import com.sytycc.sytycc.app.data.Product;
+import com.sytycc.sytycc.app.layout.notifications.NotificationsActivity;
 import com.sytycc.sytycc.app.layout.products.ProductsAdapter;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
 
 import java.util.List;
 
@@ -34,6 +44,9 @@ public class MainActivity extends ActionBarActivity {
     private TabHost tabHost;
     private ListView productsListView;
     private ProductsAdapter productsAdapter;
+
+    private static String TAG = MainActivity.class.getSimpleName();
+    public static String INTERNAL_STORAGE_FILENAME = "ModifyINGnotifications";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +86,10 @@ public class MainActivity extends ActionBarActivity {
         SettingsFragment fragment = new SettingsFragment();
         fragmentTransaction.add(R.id.tab3, fragment);
         fragmentTransaction.commit();
+
+        /* Init notifications
+        * TODO afwerken */
+        // initNotifications();
 
         tabHost.addTab(spec1);
         tabHost.addTab(spec2);
@@ -116,9 +133,13 @@ public class MainActivity extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_settings) {
-            startActivity(new Intent(this, SettingsActivity.class));
+            startActivity(new Intent(this, NotificationsActivity.class));
             // Testing Purposes
-            showNotification(R.drawable.notification,getString(R.string.notification_example_title),getString(R.string.notification_example_text));
+
+            /*showNotification(R.drawable.notification_white,getString(R.string.notification_example_title),getString(R.string.notification_example_text));
+            ListView notifications = (ListView) findViewById(R.id.listView);
+            ((NotificationAdapter)notifications.getAdapter()).addNotification(new Notification("Notification","Reuse is nen homo"));*/
+
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -170,4 +191,27 @@ public class MainActivity extends ActionBarActivity {
         mNotificationManager.notify(0, mBuilder.build());
     }
 
+    private void initNotifications(){
+        /*
+         * Pull from server
+         * If in background, call showNotification
+         * If not in background, show new (unread notifications) in menubar
+         */
+
+        /* Write notification(s) to file */
+        String notification = "title///text";
+        writeNotificationsToFile(notification);
+
+    }
+
+    private void writeNotificationsToFile(String notification){
+        try {
+            FileOutputStream fos = openFileOutput(INTERNAL_STORAGE_FILENAME, Context.MODE_APPEND);
+            fos.write(notification.getBytes());
+            fos.close();
+        } catch (IOException e1){
+            Log.e(TAG, "Error writing to " + INTERNAL_STORAGE_FILENAME);
+        }
+    }
 }
+
