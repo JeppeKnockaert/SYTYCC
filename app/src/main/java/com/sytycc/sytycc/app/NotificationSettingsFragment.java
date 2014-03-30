@@ -18,6 +18,7 @@ public class NotificationSettingsFragment extends PreferenceFragment {
 
         listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
             public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+                System.out.println("hoi: "+key);
                 if(key.equals("pref_key_notifications_enabled")){
                     if(prefs.getBoolean(key,false)){
                         MainActivity.getInstance().schedulePulls();

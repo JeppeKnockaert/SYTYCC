@@ -19,6 +19,7 @@ import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -76,6 +77,7 @@ public class MainActivity extends ActionBarActivity {
     private static int SERVER_CHECK_INTERVAL = 5000; // Millisecs, time between server pulls
 
     private static MainActivity instance;
+    private boolean pulling = false;
 
 
     @Override
@@ -145,8 +147,11 @@ public class MainActivity extends ActionBarActivity {
             tabHost.setCurrentTab(2);
         }
 
-        /* Start periodic checks */
-        schedulePulls();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if(prefs.getBoolean("pref_key_notifications_enabled", false)){
+            /* Start periodic checks */
+            schedulePulls();
+        }
     }
 
     private void showPinDialog(final int selectedPosition, String title){
@@ -375,23 +380,30 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void schedulePulls() {
-        Intent intent = new Intent(getApplicationContext(), NotificationReceiver.class);
-        // Create a PendingIntent to be triggered when the alarm goes off
-        final PendingIntent pIntent = PendingIntent.getBroadcast(this, NotificationReceiver.REQUEST_CODE,
-                intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        if(!pulling){
+            Intent intent = new Intent(getApplicationContext(), NotificationReceiver.class);
+            // Create a PendingIntent to be triggered when the alarm goes off
+            final PendingIntent pIntent = PendingIntent.getBroadcast(this, NotificationReceiver.REQUEST_CODE,
+                    intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        long firstMillis = System.currentTimeMillis();
-        int intervalMillis = SERVER_CHECK_INTERVAL;
-        AlarmManager alarm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-        alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, firstMillis, intervalMillis, pIntent);
+            long firstMillis = System.currentTimeMillis();
+            int intervalMillis = SERVER_CHECK_INTERVAL;
+            AlarmManager alarm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+            alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, firstMillis, intervalMillis, pIntent);
+            pulling = true;
+        }
     }
 
     public void cancelPulls() {
-        Intent intent = new Intent(getApplicationContext(), NotificationReceiver.class);
-        final PendingIntent pIntent = PendingIntent.getBroadcast(this, NotificationReceiver.REQUEST_CODE,
-                intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        AlarmManager alarm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-        alarm.cancel(pIntent);
+        if(pulling){
+            Intent intent = new Intent(getApplicationContext(), NotificationReceiver.class);
+            final PendingIntent pIntent = PendingIntent.getBroadcast(this, NotificationReceiver.REQUEST_CODE,
+                    intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            AlarmManager alarm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+            alarm.cancel(pIntent);
+            pulling = false;
+        }
+
     }
 
     public static MainActivity getInstance(){
