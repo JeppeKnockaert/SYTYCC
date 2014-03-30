@@ -113,7 +113,8 @@ public class MainActivity extends ActionBarActivity {
         notificationsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, final int i, long l) {
-                showPinDialog(i, "Insert PIN code");
+                showNotificationDetails(notificationAdapter.getItem(i));
+                //showPinDialog(i, "Insert PIN code");
             }
         });
         notificationsListView.setAdapter(notificationAdapter);
@@ -166,7 +167,7 @@ public class MainActivity extends ActionBarActivity {
                                 * pin code of a user in the api */
                         if(Integer.parseInt(pin) < 500000){
                                     /* Pin correct, show detailed information about  */
-                            showNotificationDetails(notificationAdapter.getItem(selectedPosition));
+
                         } else {
                             showPinDialog(selectedPosition,"PIN incorrect");
                         }
