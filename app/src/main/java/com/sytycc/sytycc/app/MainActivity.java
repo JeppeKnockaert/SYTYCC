@@ -75,10 +75,13 @@ public class MainActivity extends ActionBarActivity {
     private static int PIN_LENGTH = 6;
     private static int SERVER_CHECK_INTERVAL = 5000; // Millisecs, time between server pulls
 
+    private static MainActivity instance;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        instance = this;
 
         /* Start service to pull from server and send notifications when the app is
         * running in the background */
@@ -389,5 +392,9 @@ public class MainActivity extends ActionBarActivity {
                 intent, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
         alarm.cancel(pIntent);
+    }
+
+    public static MainActivity getInstance(){
+        return instance;
     }
 }
