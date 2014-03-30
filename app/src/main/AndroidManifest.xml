@@ -17,7 +17,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <service android:name=".layout.notifications.NotificationService" />
-        <receiver
+        <receiver android:enabled="false"
             android:name=".layout.notifications.NotificationReceiver"
             android:process=":remote" >
         </receiver>

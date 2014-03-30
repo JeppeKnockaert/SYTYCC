@@ -24,7 +24,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TabHost;
@@ -35,6 +34,7 @@ import com.sytycc.sytycc.app.data.Notifiable;
 import com.sytycc.sytycc.app.data.Product;
 import com.sytycc.sytycc.app.layout.notifications.NotificationAdapter;
 import com.sytycc.sytycc.app.layout.notifications.NotificationReceiver;
+import com.sytycc.sytycc.app.layout.notifications.NotificationService;
 import com.sytycc.sytycc.app.layout.products.ProductsAdapter;
 import com.sytycc.sytycc.app.utilities.IOManager;
 
@@ -126,12 +126,6 @@ public class MainActivity extends ActionBarActivity {
         if((getIntent() != null) && (getIntent().getExtras() != null) && (getIntent().getExtras().getInt("TAB") == 2)){
             tabHost.setCurrentTab(2);
         }
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        if(prefs.getBoolean("pref_key_notifications_enabled", false)){
-            /* Start periodic checks */
-            schedulePulls();
-        }
     }
 
     private void showPinDialog(final int selectedPosition, String title){
@@ -153,14 +147,15 @@ public class MainActivity extends ActionBarActivity {
                         String pin = input.getText().toString();
                                 /* Validate with pin dummy data because we can not access the
                                 * pin code of a user in the api */
-                        if(Integer.parseInt(pin) < 500000){
+                        if (Integer.parseInt(pin) < 500000) {
                                     /* Pin correct, show detailed information about  */
                             showNotificationDetails(notificationAdapter.getItem(selectedPosition));
                         } else {
-                            showPinDialog(selectedPosition,"PIN incorrect");
+                            showPinDialog(selectedPosition, "PIN incorrect");
                         }
                     }
-                });
+                }
+        );
 
         alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {}
@@ -192,6 +187,19 @@ public class MainActivity extends ActionBarActivity {
         d.show();
     }
 
+    private void bootService(){
+        /* Start service to pull from server and send notifications when the app is
+                     * running in the background */
+        Intent intent = new Intent(this, NotificationService.class);
+        startService(intent);
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if(prefs.getBoolean("pref_key_notifications_enabled", false)){
+                        /* Start periodic checks */
+            schedulePulls();
+        }
+    }
+
     private class LoadProducts extends AsyncTask<String, Void, Void>{
         @Override
         protected Void doInBackground(String... strings) {
@@ -199,10 +207,7 @@ public class MainActivity extends ActionBarActivity {
             api.init(MainActivity.this,new SessionListener() {
                 @Override
                 public void sessionReady() {
-                    /* Start service to pull from server and send notifications when the app is
-                     * running in the background */
-                    //Intent intent = new Intent(MainActivity.this, NotificationService.class);
-                    //startService(intent);
+                    //bootService();
                     // Fetch products
                     api.getProducts(new APIListener() {
                         @Override
