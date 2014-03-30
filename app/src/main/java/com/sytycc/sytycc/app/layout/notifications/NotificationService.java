@@ -1,6 +1,7 @@
 package com.sytycc.sytycc.app.layout.notifications;
 
 import android.annotation.TargetApi;
+import android.app.ActivityManager;
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -68,12 +69,17 @@ public class NotificationService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         if(newStuffOnServer()){
-            showNotification("Notification","Reuse is still an homo");
+            if (!getApplicationContext().getPackageName().equalsIgnoreCase(((ActivityManager)getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE)).getRunningTasks(1).get(0).topActivity.getPackageName()))
+            {
+                // App is not in the foreground
+                showNotification("Notification","Reuse is still an homo");
+            }
         }
     }
 
     private boolean newStuffOnServer(){
-        /* TODO pull fom server, write to file, show new notification (read from file) */
+        /* TODO pull fom server, write to file, show new notification (read from file)
+         *  */
         return true;
     }
 
