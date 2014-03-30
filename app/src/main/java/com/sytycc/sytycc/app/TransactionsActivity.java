@@ -74,6 +74,8 @@ public class TransactionsActivity extends ActionBarActivity {
                         transactionsListView.setAdapter(transactionsAdapter);
                     }
                 });
+                api.destroySession();
+
             }
         });
 
