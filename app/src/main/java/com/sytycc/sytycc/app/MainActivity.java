@@ -19,6 +19,7 @@ import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -37,6 +38,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TabHost;
@@ -77,17 +79,22 @@ public class MainActivity extends ActionBarActivity {
     private static int SERVER_CHECK_INTERVAL = 5000; // Millisecs, time between server pulls
 
     private boolean updateNotificationsAdapter = false;
+    private static MainActivity instance;
+    private boolean pulling = false;
+    private int notificationAmount = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        instance = this;
 
         /* Start service to pull from server and send notifications when the app is
         * running in the background */
         Intent intent = new Intent(this, NotificationService.class);
         startService(intent);
 
-        PreferenceManager.setDefaultValues(this, R.xml.preferences, true);
+        PreferenceManager.setDefaultValues(this, R.xml.preferences_account, true);
         setContentView(R.layout.activity_main);
 
         productsListView = (ListView) findViewById(R.id.productsListView);
@@ -108,7 +115,11 @@ public class MainActivity extends ActionBarActivity {
         spec1.setIndicator(getString(R.string.home_tab));
 
         TabHost.TabSpec spec2=tabHost.newTabSpec("Notifications");
-        spec2.setIndicator(getString(R.string.notifications_tab));
+        /*ImageView notifyIcon = new ImageView(this);
+        notifyIcon.setImageResource(R.drawable.warning);
+        notifyIcon.setScaleType(ImageView.ScaleType.CENTER_INSIDE);*/
+        spec2.setIndicator("",getResources().getDrawable(R.drawable.warning));
+        //spec2.setIndicator(getString(R.string.notifications_tab));
         spec2.setContent(R.id.tab2);
 
         TabHost.TabSpec spec3=tabHost.newTabSpec("Settings");
@@ -118,7 +129,7 @@ public class MainActivity extends ActionBarActivity {
         /* show settings fragment in settings tab */
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        SettingsFragment fragment = new SettingsFragment();
+        NotificationSettingsFragment fragment = new NotificationSettingsFragment();
         fragmentTransaction.add(R.id.tab3, fragment);
         fragmentTransaction.commit();
 
@@ -143,8 +154,11 @@ public class MainActivity extends ActionBarActivity {
             tabHost.setCurrentTab(2);
         }
 
-        /* Start periodic checks */
-        schedulePulls();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if(prefs.getBoolean("pref_key_notifications_enabled", false)){
+            /* Start periodic checks */
+            schedulePulls();
+        }
     }
 
     @Override
@@ -257,7 +271,7 @@ public class MainActivity extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_settings) {
-            startActivity(new Intent(this, SettingsActivity.class));
+            startActivity(new Intent(this, AccountSettingsActivity.class));
             return true;
         }else if(id == R.id.action_cardstop){
             Intent callIntent = new Intent(Intent.ACTION_CALL);
@@ -270,25 +284,28 @@ public class MainActivity extends ActionBarActivity {
     protected void onSaveInstanceState(Bundle bundle) {
         super.onSaveInstanceState(bundle);
         bundle.putInt("currentTabNr", tabHost.getCurrentTab());
+        bundle.putInt("notificationAmount",notificationAmount);
     }
 
     protected void onRestoreInstanceState(Bundle bundle){
         super.onRestoreInstanceState(bundle);
         tabHost.setCurrentTab(bundle.getInt("currentTabNr"));
+        setNotificationAmount(bundle.getInt("notificationAmount"));
     }
 
     private void loadNotifications(){
         ArrayList<Notifiable> noteList = new ArrayList<Notifiable>();
-        List<Notifiable> notifications = IOManager.fetchNotificationsFromStorage(this);
+        notificationAdapter = new NotificationAdapter(getApplicationContext(),noteList);
+
+        Stack<Notifiable> notifications = IOManager.fetchNotificationsFromStorage(this);
         if (notifications != null){
             for (Notifiable notification : notifications){
-
+                notificationAdapter.add(notification);
             }
         }
-        /* TODO read from internal storage and add */
 
-        noteList.add(new InfoNotification("Title 1","Reuse is nen homo 1"));
-        noteList.add(new InfoNotification("Title 2","Reuse is nen homo 2"));
+        notificationAdapter.add(new InfoNotification("Title 1","Reuse is nen homo 1"));
+        notificationAdapter.add(new InfoNotification("Title 2","Reuse is nen homo 2"));
         Notifiable n1 = new InfoNotification("Title 3","Reuse is nen homo 3");
         Notifiable n2 = new InfoNotification("Title 4","Reuse is nen homo 4");
         Notifiable n3 = new InfoNotification("Title 5","Reuse is nen homo 5");
@@ -296,10 +313,10 @@ public class MainActivity extends ActionBarActivity {
         n2.markAsRead();
         n3.markAsRead();
 
-        noteList.add(n1);
-        noteList.add(n2);
-        noteList.add(n3);
-        notificationAdapter = new NotificationAdapter(getApplicationContext(),noteList);
+        notificationAdapter.add(n1);
+        notificationAdapter.add(n2);
+        notificationAdapter.add(n3);
+
         /*
          * Pull from server
          * If in background, call showNotification
@@ -353,7 +370,13 @@ public class MainActivity extends ActionBarActivity {
             Stack<Notifiable> notifications = IOManager.fetchNotificationsFromStorage(MainActivity.this);
             Stack<Transaction> toadd = new Stack<Transaction>();
             if (notifications == null || notifications.isEmpty()){
-                return null;
+                Stack<Transaction> transactionstack = new Stack<Transaction>();
+                for (Map.Entry<String, List<Transaction>> entry : transactions.entrySet()){
+                    for (Transaction transaction : entry.getValue()){
+                        transactionstack.push(transaction);
+                    }
+                }
+                return transactionstack;
             }
             else {
                 for (Map.Entry<String, List<Transaction>> entry : transactions.entrySet()) {
@@ -386,22 +409,39 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void schedulePulls() {
-        Intent intent = new Intent(getApplicationContext(), NotificationReceiver.class);
-        // Create a PendingIntent to be triggered when the alarm goes off
-        final PendingIntent pIntent = PendingIntent.getBroadcast(this, NotificationReceiver.REQUEST_CODE,
-                intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        if(!pulling){
+            Intent intent = new Intent(getApplicationContext(), NotificationReceiver.class);
+            // Create a PendingIntent to be triggered when the alarm goes off
+            final PendingIntent pIntent = PendingIntent.getBroadcast(this, NotificationReceiver.REQUEST_CODE,
+                    intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        long firstMillis = System.currentTimeMillis();
-        int intervalMillis = SERVER_CHECK_INTERVAL;
-        AlarmManager alarm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-        alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, firstMillis, intervalMillis, pIntent);
+            long firstMillis = System.currentTimeMillis();
+            int intervalMillis = SERVER_CHECK_INTERVAL;
+            AlarmManager alarm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+            alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, firstMillis, intervalMillis, pIntent);
+            pulling = true;
+        }
     }
 
     public void cancelPulls() {
-        Intent intent = new Intent(getApplicationContext(), NotificationReceiver.class);
-        final PendingIntent pIntent = PendingIntent.getBroadcast(this, NotificationReceiver.REQUEST_CODE,
-                intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        AlarmManager alarm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-        alarm.cancel(pIntent);
+        if(pulling){
+            Intent intent = new Intent(getApplicationContext(), NotificationReceiver.class);
+            final PendingIntent pIntent = PendingIntent.getBroadcast(this, NotificationReceiver.REQUEST_CODE,
+                    intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            AlarmManager alarm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+            alarm.cancel(pIntent);
+            pulling = false;
+        }
+
+    }
+
+    public static MainActivity getInstance(){
+        return instance;
+    }
+
+    public void setNotificationAmount(int amount){
+        this.notificationAmount = amount;
+        TextView title = (TextView) tabHost.getTabWidget().getChildAt(1).findViewById(android.R.id.title);
+        title.setText("" + (amount==0?"":amount));
     }
 }
