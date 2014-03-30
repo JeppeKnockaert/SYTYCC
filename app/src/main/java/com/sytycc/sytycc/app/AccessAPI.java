@@ -160,6 +160,10 @@ public class AccessAPI{
         }
     }
 
+    public boolean isSessionReady(){
+        return sessionid != null;
+    }
+
     private void readCookieFromFile(){
         // Read cookie from file
         String filename = "cookie";

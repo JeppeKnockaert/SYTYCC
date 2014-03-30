@@ -68,6 +68,11 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         instance = this;
 
+         /* Start service to pull from server and send notifications when the app is
+                     * running in the background */
+        Intent intent = new Intent(this, NotificationService.class);
+        startService(intent);
+
         PreferenceManager.setDefaultValues(this, R.xml.preferences_account, true);
         setContentView(R.layout.activity_main);
 
@@ -204,19 +209,6 @@ public class MainActivity extends ActionBarActivity {
         updateNotificationsAdapter = true;
     }
 
-    private void bootService(){
-        /* Start service to pull from server and send notifications when the app is
-                     * running in the background */
-        Intent intent = new Intent(this, NotificationService.class);
-        startService(intent);
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        if(prefs.getBoolean("pref_key_notifications_enabled", false)){
-                        /* Start periodic checks */
-            schedulePulls();
-        }
-    }
-
     private class LoadProducts extends AsyncTask<String, Void, Void>{
         @Override
         protected Void doInBackground(String... strings) {
@@ -224,7 +216,6 @@ public class MainActivity extends ActionBarActivity {
             api.init(MainActivity.this,new SessionListener() {
                 @Override
                 public void sessionReady() {
-                    bootService();
                     // Fetch products
                     api.getProducts(new APIListener() {
                         @Override
