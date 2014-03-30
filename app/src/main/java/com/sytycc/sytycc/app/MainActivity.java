@@ -112,19 +112,19 @@ public class MainActivity extends ActionBarActivity {
 
         TabHost.TabSpec spec1=tabHost.newTabSpec("Home");
         spec1.setContent(R.id.tab1);
-        spec1.setIndicator(getString(R.string.home_tab));
+        spec1.setIndicator("",getResources().getDrawable(R.drawable.home_white));
 
         TabHost.TabSpec spec2=tabHost.newTabSpec("Notifications");
         /*ImageView notifyIcon = new ImageView(this);
         notifyIcon.setImageResource(R.drawable.warning);
         notifyIcon.setScaleType(ImageView.ScaleType.CENTER_INSIDE);*/
-        spec2.setIndicator("",getResources().getDrawable(R.drawable.warning));
+        spec2.setIndicator("",getResources().getDrawable(R.drawable.warning_white));
         //spec2.setIndicator(getString(R.string.notifications_tab));
         spec2.setContent(R.id.tab2);
 
         TabHost.TabSpec spec3=tabHost.newTabSpec("Settings");
         spec3.setContent(R.id.tab3);
-        spec3.setIndicator(getString(R.string.settings_tab));
+        spec3.setIndicator("",getResources().getDrawable(R.drawable.settings_white));
 
         /* show settings fragment in settings tab */
         FragmentManager fragmentManager = getFragmentManager();
