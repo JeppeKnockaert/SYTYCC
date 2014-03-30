@@ -1,6 +1,8 @@
 package com.sytycc.sytycc.app;
 
 import android.app.Dialog;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
@@ -108,6 +110,10 @@ public class TransactionsActivity extends ActionBarActivity {
         int id = item.getItemId();
         if (id == R.id.action_settings) {
             return true;
+        }else if(id == R.id.action_cardstop){
+            Intent callIntent = new Intent(Intent.ACTION_CALL);
+            callIntent.setData(Uri.parse("tel:0495789995"));
+            startActivity(callIntent);
         }
         return super.onOptionsItemSelected(item);
     }

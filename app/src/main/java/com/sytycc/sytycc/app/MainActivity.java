@@ -7,12 +7,14 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 
 import com.sytycc.sytycc.app.data.Transaction;
-import com.sytycc.sytycc.app.layout.notifications.Notification;
+import com.sytycc.sytycc.app.data.Notification;
+
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -32,16 +34,22 @@ import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.TextView;
 
+import com.sytycc.sytycc.app.data.Notification;
 import com.sytycc.sytycc.app.data.Product;
+import com.sytycc.sytycc.app.data.Transaction;
 import com.sytycc.sytycc.app.layout.notifications.NotificationAdapter;
 import com.sytycc.sytycc.app.layout.notifications.NotificationService;
 import com.sytycc.sytycc.app.layout.products.ProductsAdapter;
 
+import java.util.HashMap;
+import java.util.Iterator;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -172,7 +180,13 @@ public class MainActivity extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_settings) {
+            startActivity(new Intent(this, SettingsActivity.class));
+            // Testing Purposes
             return true;
+        }else if(id == R.id.action_cardstop){
+            Intent callIntent = new Intent(Intent.ACTION_CALL);
+            callIntent.setData(Uri.parse("tel:0495789995"));
+            startActivity(callIntent);
         }
         return super.onOptionsItemSelected(item);
     }
@@ -190,18 +204,18 @@ public class MainActivity extends ActionBarActivity {
     private void loadNotifications(){
         ArrayList<Notification> noteList = new ArrayList<Notification>();
         /* TODO read from internal storage and add */
-        noteList.add(new Notification("Title 1","Reuse is nen homo 1"));
-        noteList.add(new Notification("Title 2","Reuse is nen homo 2"));
-        Notification n1 = new Notification("Title 3","Reuse is nen homo 3");
-        Notification n2 = new Notification("Title 4","Reuse is nen homo 4");
-        Notification n3 = new Notification("Title 5","Reuse is nen homo 5");
-        n1.markAsRead();
-        n2.markAsRead();
-        n3.markAsRead();
+        noteList.add(new Notification("Title 1","Reuse is nen homo 1",null,null));
+        noteList.add(new Notification("Title 2","Reuse is nen homo 2",null,null));
+        Notification n1 = new Notification("Title 3","Reuse is nen homo 3",null,null);
+        Notification n2 = new Notification("Title 4","Reuse is nen homo 4",null,null);
+        Notification n3 = new Notification("Title 5","Reuse is nen homo 5",null,null);
+        //n1.markAsRead();
+        //n2.markAsRead();
+        //n3.markAsRead();
         noteList.add(n1);
         noteList.add(n2);
         noteList.add(n3);
-        notificationAdapter = new NotificationAdapter(getApplicationContext(),noteList);
+        /*notificationAdapter = new NotificationAdapter(getApplicationContext(),noteList);
         /*
          * Pull from server
          * If in background, call showNotification
@@ -210,17 +224,94 @@ public class MainActivity extends ActionBarActivity {
 
         /* Write notification(s) to file */
         String notification = "title///text";
-        writeNotificationsToFile(notification);
+        //writeNotificationsToFile(notification);
+        // Creates an explicit intent for an Activity in your app
+        Intent resultIntent = new Intent(this, MainActivity.class);
+
+        // The stack builder object will contain an artificial back stack for the
+        // started Activity.
+        // This ensures that navigating backward from the Activity leads out of
+        // your application to the Home screen.
+        /*
+        PendingIntent resultPendingIntent;
+            TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+            // Adds the back stack for the Intent (but not the Intent itself)
+            stackBuilder.addParentStack(MainActivity.class);
+            // Adds the Intent that starts the Activity to the top of the stack
+            stackBuilder.addNextIntent(resultIntent);
+            resultPendingIntent =
+                    stackBuilder.getPendingIntent(
+                            0,
+                            PendingIntent.FLAG_UPDATE_CURRENT
+                    );
+
+       /* mBuilder.setContentIntent(resultPendingIntent);
+        NotificationManager mNotificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        // mId allows you to update the notification later on.
+        mNotificationManager.notify(0, mBuilder.build());*/
     }
 
-    private void writeNotificationsToFile(String notification){
-        try {
-            FileOutputStream fos = openFileOutput(INTERNAL_STORAGE_FILENAME, Context.MODE_APPEND);
-            fos.write(notification.getBytes());
-            fos.close();
-        } catch (IOException e1){
-            Log.e(TAG, "Error writing to " + INTERNAL_STORAGE_FILENAME);
+    private class notificationFetcher extends AsyncTask<String, Void, Void>{
+
+        private int done = 0;
+
+        @Override
+        protected Void doInBackground(String... strings) {
+            final AccessAPI api = AccessAPI.getInstance();
+            api.init(MainActivity.this,new SessionListener() {
+                @Override
+                public void sessionReady(final String sessionid) {
+                    api.getProducts(new APIListener() {
+                        @Override
+                        public void receiveAnswer(Object obj) {
+                            final List<Product> productList = (List<Product>) obj;
+                            final Map<String, List<Transaction>> transactionList = new HashMap<String, List<Transaction>>();
+                            for (final Product product : productList){
+                                api.getProductTransactions(product.getUuid(),new APIListener() {
+                                    @Override
+                                    public void receiveAnswer(Object obj) {
+                                        transactionList.put(product.getUuid(), (List<Transaction>) obj);
+                                        if (transactionList.size() == productList.size()){
+                                            Stack<Transaction> toadd = retrieveNewTransactions(transactionList);
+                                        }
+                                    }
+                                },sessionid);
+                            }
+                        }
+                    },sessionid);
+                }
+            });
+            return null;
+        }
+
+        private Stack<Transaction> retrieveNewTransactions(Map<String, List<Transaction>> transactions){
+            Stack<Notification> notifications = Notification.fetchNotificationsFromStorage(MainActivity.this);
+            Stack<Transaction> toadd = new Stack<Transaction>();
+            for (Map.Entry<String, List<Transaction>> entry : transactions.entrySet()){
+                Transaction mostrecentnotification = null;
+                List<Transaction> transactionlist = entry.getValue();
+                Iterator<Notification> it = notifications.iterator();
+                while (it.hasNext()){
+                    Notification notification = it.next();
+                    if (notification.getCategory() == Notification.Category.TRANSACTION && notification.getOwner().equals(entry.getKey())){
+                        mostrecentnotification = notification.getTransaction();
+                    }
+                }
+                int i = 0;
+                boolean found = false;
+                while (i < transactionlist.size() && !found){
+                    Transaction currtransaction = transactionlist.get(i);
+                    if (!mostrecentnotification.equals(currtransaction)){
+                       toadd.push(currtransaction);
+                    }
+                    else{
+                        found = true;
+                    }
+                }
+            }
+            return toadd;
         }
     }
-}
 
+}
