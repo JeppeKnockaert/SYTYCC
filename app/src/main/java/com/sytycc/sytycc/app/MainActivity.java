@@ -21,10 +21,16 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TabHost;
 
+import com.sytycc.sytycc.app.data.Notification;
 import com.sytycc.sytycc.app.data.Product;
+import com.sytycc.sytycc.app.data.Transaction;
 import com.sytycc.sytycc.app.layout.products.ProductsAdapter;
 
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -114,6 +120,13 @@ public class MainActivity extends ActionBarActivity {
         int id = item.getItemId();
         if (id == R.id.action_settings) {
             startActivity(new Intent(this, SettingsActivity.class));
+
+            List<Notification> notifications = Notification.fetchNotificationsFromStorage(this);
+            if (notifications != null){
+                for (Notification notification : notifications){
+                    showNotification(R.drawable.notification,notification.getTitle(),notification.getMessage());
+                }
+            }
             // Testing Purposes
             showNotification(R.drawable.notification,getString(R.string.notification_example_title),getString(R.string.notification_example_text));
             return true;
@@ -165,6 +178,68 @@ public class MainActivity extends ActionBarActivity {
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         // mId allows you to update the notification later on.
         mNotificationManager.notify(0, mBuilder.build());
+    }
+
+    private class notificationFetcher extends AsyncTask<String, Void, Void>{
+
+        private int done = 0;
+
+        @Override
+        protected Void doInBackground(String... strings) {
+            final AccessAPI api = AccessAPI.getInstance();
+            api.init(MainActivity.this,new SessionListener() {
+                @Override
+                public void sessionReady(final String sessionid) {
+                    api.getProducts(new APIListener() {
+                        @Override
+                        public void receiveAnswer(Object obj) {
+                            final List<Product> productList = (List<Product>) obj;
+                            final Map<String, List<Transaction>> transactionList = new HashMap<String, List<Transaction>>();
+                            for (final Product product : productList){
+                                api.getProductTransactions(product.getUuid(),new APIListener() {
+                                    @Override
+                                    public void receiveAnswer(Object obj) {
+                                        transactionList.put(product.getUuid(), (List<Transaction>) obj);
+                                        if (transactionList.size() == productList.size()){
+                                            Stack<Transaction> toadd = retrieveNewTransactions(transactionList);
+                                        }
+                                    }
+                                },sessionid);
+                            }
+                        }
+                    },sessionid);
+                }
+            });
+            return null;
+        }
+
+        private Stack<Transaction> retrieveNewTransactions(Map<String, List<Transaction>> transactions){
+            Stack<Notification> notifications = Notification.fetchNotificationsFromStorage(MainActivity.this);
+            Stack<Transaction> toadd = new Stack<Transaction>();
+            for (Map.Entry<String, List<Transaction>> entry : transactions.entrySet()){
+                Transaction mostrecentnotification = null;
+                List<Transaction> transactionlist = entry.getValue();
+                Iterator<Notification> it = notifications.iterator();
+                while (it.hasNext()){
+                    Notification notification = it.next();
+                    if (notification.getCategory() == Notification.Category.TRANSACTION && notification.getOwner().equals(entry.getKey())){
+                        mostrecentnotification = notification.getTransaction();
+                    }
+                }
+                int i = 0;
+                boolean found = false;
+                while (i < transactionlist.size() && !found){
+                    Transaction currtransaction = transactionlist.get(i);
+                    if (!mostrecentnotification.equals(currtransaction)){
+                       toadd.push(currtransaction);
+                    }
+                    else{
+                        found = true;
+                    }
+                }
+            }
+            return toadd;
+        }
     }
 
 }
