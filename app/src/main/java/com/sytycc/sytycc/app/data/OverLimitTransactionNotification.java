@@ -1,9 +1,11 @@
 package com.sytycc.sytycc.app.data;
 
+import java.io.Serializable;
+
 /**
  * Created by jeknocka on 30/03/14.
  */
-public class OverLimitTransactionNotification extends TransactionNotifiable {
+public class OverLimitTransactionNotification extends TransactionNotifiable implements Serializable {
 
     public OverLimitTransactionNotification(Transaction transaction){
         super(transaction);

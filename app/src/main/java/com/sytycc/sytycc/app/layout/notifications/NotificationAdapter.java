@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.sytycc.sytycc.app.R;
 import com.sytycc.sytycc.app.data.Notifiable;
+import com.sytycc.sytycc.app.utilities.IOManager;
 
 import java.util.ArrayList;
 
@@ -29,7 +30,7 @@ public class NotificationAdapter extends ArrayAdapter<Notifiable> {
     }
 
     public void addNotification(Notifiable notification){
-        notificationsArrayList.add(notification);
+        notificationsArrayList.add(0, notification);
         notifyDataSetChanged();
     }
 

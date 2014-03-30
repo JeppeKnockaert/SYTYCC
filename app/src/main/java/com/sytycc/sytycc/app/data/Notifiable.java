@@ -1,9 +1,11 @@
 package com.sytycc.sytycc.app.data;
 
+import java.io.Serializable;
+
 /**
  * Created by jeknocka on 30/03/14.
  */
-public abstract class Notifiable {
+public abstract class Notifiable implements Serializable{
 
     private boolean read;
 
