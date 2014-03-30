@@ -8,7 +8,9 @@ import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 
 import com.sytycc.sytycc.app.APIListener;
@@ -16,7 +18,10 @@ import com.sytycc.sytycc.app.AccessAPI;
 import com.sytycc.sytycc.app.MainActivity;
 import com.sytycc.sytycc.app.PincodeActivity;
 import com.sytycc.sytycc.app.R;
+import com.sytycc.sytycc.app.data.Notifiable;
+import com.sytycc.sytycc.app.data.OverLimitTransactionNotification;
 import com.sytycc.sytycc.app.data.Transaction;
+import com.sytycc.sytycc.app.utilities.IOManager;
 
 import java.util.Stack;
 
@@ -78,18 +83,42 @@ public class NotificationService extends IntentService {
                     if (obj != null) {
                         Stack<Transaction> transactions = (Stack<Transaction>) obj;
                         // New transactions available
-                        if (!transactions.empty()) {
-                            if (!getApplicationContext().getPackageName().equalsIgnoreCase(((ActivityManager) getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE)).getRunningTasks(1).get(0).topActivity.getPackageName())) {
-                                // App is not in the foreground
-                                showNotification("Notification", "Reuse is still an homo");
-                            } else {
-                                // Increment number in notifications tab name
+                        loadPreferences();
+                        for (Transaction trans : transactions){
+
+                            Notifiable notification = null;
+                            if (trans.getAmount() > sendmin){
+                                notification = new OverLimitTransactionNotification(trans);
+                            }
+                            if (notification != null) {
+                                System.out.println("test");
+                                if (!getApplicationContext().getPackageName().equalsIgnoreCase(((ActivityManager) getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE)).getRunningTasks(1).get(0).topActivity.getPackageName())) {
+                                    // App is not in the foreground
+                                    showNotification(notification.getTitle(),notification.getMessage());
+                                    IOManager.addNotificationToStorage(notification,getApplicationContext());
+                                    MainActivity.getInstance().loadNotifications();
+                                    //howNotification("Notification", "Reuse is still an homo");
+                                } else {
+                                    // App is not in the foreground
+                                    showNotification(notification.getTitle(),notification.getMessage());
+                                    IOManager.addNotificationToStorage(notification,getApplicationContext());
+                                    MainActivity.getInstance().loadNotifications();
+                                    MainActivity.getInstance().setNotificationAmount(MainActivity.getInstance().getNotificationAmount());
+                                    // Increment number in notifications tab name
+                                }
                             }
                         }
                     }
                 }
             });
         }
+    }
+
+    private int sendmin;
+
+    private void loadPreferences(){
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        this.sendmin = 5;//Integer.parseInt(prefs.getString("pref_key_sendmin", "0"));
     }
 
 }

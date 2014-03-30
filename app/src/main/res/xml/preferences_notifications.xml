@@ -39,7 +39,7 @@
             android:dependency="pref_key_notifications_enabled"
             />
         <EditTextPreference
-            android:key="pref_key_"
+            android:key="pref_key_sendmin"
             android:title="@string/pref_key_sendmin"
             android:defaultValue="@string/pref_key_sendmin_default"
             android:selectAllOnFocus="true"

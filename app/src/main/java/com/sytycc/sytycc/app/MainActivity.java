@@ -5,7 +5,6 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -32,10 +31,7 @@ import android.widget.TextView;
 
 import com.sytycc.sytycc.app.data.InfoNotification;
 import com.sytycc.sytycc.app.data.Notifiable;
-import com.sytycc.sytycc.app.data.OverLimitTransactionNotification;
 import com.sytycc.sytycc.app.data.Product;
-import com.sytycc.sytycc.app.data.Transaction;
-import com.sytycc.sytycc.app.data.TransactionNotifiable;
 import com.sytycc.sytycc.app.layout.notifications.NotificationAdapter;
 import com.sytycc.sytycc.app.layout.notifications.NotificationReceiver;
 import com.sytycc.sytycc.app.layout.notifications.NotificationService;
@@ -43,11 +39,6 @@ import com.sytycc.sytycc.app.layout.products.ProductsAdapter;
 import com.sytycc.sytycc.app.utilities.IOManager;
 
 import java.util.ArrayList;
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-
 import java.util.List;
 import java.util.Stack;
 
@@ -63,6 +54,7 @@ public class MainActivity extends ActionBarActivity {
     private static String TAG = MainActivity.class.getSimpleName();
     public static String INTERNAL_STORAGE_FILENAME = "ModifyINGnotifications";
 
+    private static int PIN_LENGTH = 6;
     private static int SERVER_CHECK_INTERVAL = 5000; // Millisecs, time between server pulls
 
     private boolean updateNotificationsAdapter = false;
@@ -252,7 +244,7 @@ public class MainActivity extends ActionBarActivity {
         setNotificationAmount(bundle.getInt("notificationAmount"));
     }
 
-    private void loadNotifications(){
+    public void loadNotifications(){
         ArrayList<Notifiable> noteList = new ArrayList<Notifiable>();
         notificationAdapter = new NotificationAdapter(getApplicationContext(),noteList);
 
@@ -263,21 +255,8 @@ public class MainActivity extends ActionBarActivity {
             }
         }
 
-        notificationAdapter.add(new InfoNotification("Title 1","Reuse is nen homo 1"));
-        notificationAdapter.add(new InfoNotification("Title 2","Reuse is nen homo 2"));
-        Notifiable n1 = new InfoNotification("Title 3","Reuse is nen homo 3");
-        Notifiable n2 = new InfoNotification("Title 4","Reuse is nen homo 4");
-        Notifiable n3 = new InfoNotification("Title 5","Reuse is nen homo 5");
-        Notifiable n4 = new OverLimitTransactionNotification(new Transaction("UID_555","ING Brussel","Test description","Overschrijving", 1337, new Date(), new Date()));
-
-        n1.markAsRead();
-        n2.markAsRead();
-        n3.markAsRead();
-
-        notificationAdapter.add(n4);
-        notificationAdapter.add(n1);
-        notificationAdapter.add(n2);
-        notificationAdapter.add(n3);
+        notificationAdapter.add(new InfoNotification("Info","New message from ING"));
+        notificationAdapter.add(new InfoNotification("Salary received","Salary received"));
 
         /*
          * Pull from server
@@ -330,5 +309,9 @@ public class MainActivity extends ActionBarActivity {
 
     public void transfer(){
         System.out.println("transfer");
+    }
+
+    public int getNotificationAmount(){
+        return notificationAmount;
     }
 }

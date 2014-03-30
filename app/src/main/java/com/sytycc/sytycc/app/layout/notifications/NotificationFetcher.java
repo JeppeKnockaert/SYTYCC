@@ -91,12 +91,14 @@ public class NotificationFetcher extends AsyncTask<APIListener, Void, Void> {
                 }
                 int i = 0;
                 boolean found = false;
-                while (i < transactionlist.size() && !found) {
-                    Transaction currtransaction = transactionlist.get(i);
-                    if (!mostrecentnotification.equals(currtransaction)) {
-                        toadd.push(currtransaction);
-                    } else {
-                        found = true;
+                if (mostrecentnotification != null) {
+                    while (i < transactionlist.size() && !found) {
+                        Transaction currtransaction = transactionlist.get(i);
+                        if (!mostrecentnotification.equals(currtransaction)) {
+                            toadd.push(currtransaction);
+                        } else {
+                            found = true;
+                        }
                     }
                 }
             }
