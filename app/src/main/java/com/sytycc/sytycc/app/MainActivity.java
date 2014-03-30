@@ -1,21 +1,8 @@
 package com.sytycc.sytycc.app;
 
-import android.annotation.TargetApi;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-
-import com.sytycc.sytycc.app.data.Transaction;
-import com.sytycc.sytycc.app.data.Notification;
-
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
-import android.content.Context;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
-
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -24,8 +11,6 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.text.InputFilter;
 import android.text.method.DigitsKeyListener;
-import android.util.Log;
-
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -34,7 +19,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TabHost;
-import android.widget.TextView;
 
 import com.sytycc.sytycc.app.data.Notification;
 import com.sytycc.sytycc.app.data.Product;
@@ -42,6 +26,7 @@ import com.sytycc.sytycc.app.data.Transaction;
 import com.sytycc.sytycc.app.layout.notifications.NotificationAdapter;
 import com.sytycc.sytycc.app.layout.notifications.NotificationService;
 import com.sytycc.sytycc.app.layout.products.ProductsAdapter;
+import com.sytycc.sytycc.app.utilities.IOManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -201,7 +186,7 @@ public class MainActivity extends ActionBarActivity {
 
     private void loadNotifications(){
         ArrayList<Notification> noteList = new ArrayList<Notification>();
-        List<Notification> notifications = Notification.fetchNotificationsFromStorage(this);
+        List<Notification> notifications = IOManager.fetchNotificationsFromStorage(this);
         if (notifications != null){
             for (Notification notification : notifications){
 
@@ -267,7 +252,7 @@ public class MainActivity extends ActionBarActivity {
         }
 
         private Stack<Transaction> retrieveNewTransactions(Map<String, List<Transaction>> transactions){
-            Stack<Notification> notifications = Notification.fetchNotificationsFromStorage(MainActivity.this);
+            Stack<Notification> notifications = IOManager.fetchNotificationsFromStorage(MainActivity.this);
             Stack<Transaction> toadd = new Stack<Transaction>();
             for (Map.Entry<String, List<Transaction>> entry : transactions.entrySet()){
                 Transaction mostrecentnotification = null;
