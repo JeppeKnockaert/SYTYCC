@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -118,8 +119,10 @@ public class MainActivity extends ActionBarActivity {
         notificationsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, final int i, long l) {
-                showNotificationDetails(notificationAdapter.getItem(i));
-                //showPinDialog(i, "Insert PIN code");
+                Notifiable n = notificationAdapter.getItem(i);
+                n.markAsRead();
+                showNotificationDetails(n);
+                notificationAdapter.notifyDataSetChanged();
             }
         });
         notificationsListView.setAdapter(notificationAdapter);
