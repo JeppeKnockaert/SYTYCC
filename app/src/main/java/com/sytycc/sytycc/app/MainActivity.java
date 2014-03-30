@@ -22,6 +22,7 @@ import android.widget.TabHost;
 
 import com.sytycc.sytycc.app.data.InfoNotification;
 import com.sytycc.sytycc.app.data.Notifiable;
+import com.sytycc.sytycc.app.data.OverLimitTransactionNotification;
 import com.sytycc.sytycc.app.data.Product;
 import com.sytycc.sytycc.app.data.Transaction;
 import com.sytycc.sytycc.app.data.TransactionNotifiable;
@@ -135,7 +136,9 @@ public class MainActivity extends ActionBarActivity {
             final AccessAPI api = AccessAPI.getInstance();
             api.init(MainActivity.this,new SessionListener() {
                 @Override
-                public void sessionReady(final String sessionid) {
+                public void sessionReady() {
+                    // For testing purposes
+                    new notificationFetcher().execute("");
                     api.getProducts(new APIListener() {
                         @Override
                         public void receiveAnswer(Object obj) {
@@ -144,7 +147,7 @@ public class MainActivity extends ActionBarActivity {
                             productsAdapter = new ProductsAdapter(MainActivity.this, productList);
                             productsListView.setAdapter(productsAdapter);
                         }
-                    },sessionid);
+                    });
                 }
             });
             return null;
@@ -229,7 +232,7 @@ public class MainActivity extends ActionBarActivity {
             final AccessAPI api = AccessAPI.getInstance();
             api.init(MainActivity.this,new SessionListener() {
                 @Override
-                public void sessionReady(final String sessionid) {
+                public void sessionReady() {
                     api.getProducts(new APIListener() {
                         @Override
                         public void receiveAnswer(Object obj) {
@@ -242,12 +245,17 @@ public class MainActivity extends ActionBarActivity {
                                         transactionList.put(product.getUuid(), (List<Transaction>) obj);
                                         if (transactionList.size() == productList.size()){
                                             Stack<Transaction> toadd = retrieveNewTransactions(transactionList);
+                                            while (toadd != null && !toadd.empty()){
+                                                Transaction transaction = toadd.pop();
+                                                OverLimitTransactionNotification ol = new OverLimitTransactionNotification(transaction);
+                                                notificationAdapter.addNotification(ol);
+                                            }
                                         }
                                     }
-                                },sessionid);
+                                });
                             }
                         }
-                    },sessionid);
+                    });
                 }
             });
             return null;
@@ -256,32 +264,36 @@ public class MainActivity extends ActionBarActivity {
         private Stack<Transaction> retrieveNewTransactions(Map<String, List<Transaction>> transactions){
             Stack<Notifiable> notifications = IOManager.fetchNotificationsFromStorage(MainActivity.this);
             Stack<Transaction> toadd = new Stack<Transaction>();
-            for (Map.Entry<String, List<Transaction>> entry : transactions.entrySet()){
-                Transaction mostrecentnotification = null;
-                List<Transaction> transactionlist = entry.getValue();
-                Iterator<Notifiable> it = notifications.iterator();
-                while (it.hasNext()){
-                    Notifiable notification = it.next();
-                    if (notification instanceof TransactionNotifiable){
-                        TransactionNotifiable transnotification = (TransactionNotifiable) notification;
-                        if (transnotification.getProduct().equals(entry.getKey())){
-                            mostrecentnotification = transnotification.getTransaction();
+            if (notifications == null || notifications.isEmpty()){
+                return null;
+            }
+            else {
+                for (Map.Entry<String, List<Transaction>> entry : transactions.entrySet()) {
+                    Transaction mostrecentnotification = null;
+                    List<Transaction> transactionlist = entry.getValue();
+                    Iterator<Notifiable> it = notifications.iterator();
+                    while (it.hasNext()) {
+                        Notifiable notification = it.next();
+                        if (notification instanceof TransactionNotifiable) {
+                            TransactionNotifiable transnotification = (TransactionNotifiable) notification;
+                            if (transnotification.getTransaction().getProductUuid().equals(entry.getKey())) {
+                                mostrecentnotification = transnotification.getTransaction();
+                            }
+                        }
+                    }
+                    int i = 0;
+                    boolean found = false;
+                    while (i < transactionlist.size() && !found) {
+                        Transaction currtransaction = transactionlist.get(i);
+                        if (!mostrecentnotification.equals(currtransaction)) {
+                            toadd.push(currtransaction);
+                        } else {
+                            found = true;
                         }
                     }
                 }
-                int i = 0;
-                boolean found = false;
-                while (i < transactionlist.size() && !found){
-                    Transaction currtransaction = transactionlist.get(i);
-                    if (!mostrecentnotification.equals(currtransaction)){
-                       toadd.push(currtransaction);
-                    }
-                    else{
-                        found = true;
-                    }
-                }
+                return toadd;
             }
-            return toadd;
         }
     }
 

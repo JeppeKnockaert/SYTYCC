@@ -41,6 +41,7 @@ public class AccessAPI{
     private Context context;
     private String username;
     private String birthday;
+    private String sessionid = null;
 
     private final static AccessAPI accessapi = new AccessAPI();
 
@@ -89,7 +90,13 @@ public class AccessAPI{
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                System.out.println("66:"+error);
+                if (error.networkResponse.statusCode == 502 && sessionid != null){
+                    listener.sessionReady();
+                }
+                else{
+                    System.out.println("66:"+error);
+                }
+
             }
         });
         queue.add(jsObjRequest);
@@ -115,7 +122,8 @@ public class AccessAPI{
                 Response<String> resp = super.parseNetworkResponse(response);
                 String cookie = response.headers.get("Set-Cookie");
                 String[] splitCookie = cookie.split(";");
-                listener.sessionReady(splitCookie[0]);
+                sessionid = splitCookie[0];
+                listener.sessionReady();
                 return resp;
             }
 
@@ -131,7 +139,7 @@ public class AccessAPI{
         queue.add(strRequest);
     }
 
-    private void getRequest(String requestpath, Map<String, String> arguments, final Response.Listener responselistener, final String sessionid, boolean object){
+    private void getRequest(String requestpath, Map<String, String> arguments, final Response.Listener responselistener, boolean object){
         RequestQueue queue = Volley.newRequestQueue(context);
         String url = getAPIURL(requestpath);
         JSONObject req = null;
@@ -149,7 +157,7 @@ public class AccessAPI{
             jsreq = new JsonObjectRequest(Request.Method.GET, url, req, responselistener, errlistener) {
                 @Override
                 public Map<String, String> getHeaders() throws AuthFailureError {
-                    return addSessionCookie(super.getHeaders(), sessionid);
+                    return addSessionCookie(super.getHeaders());
                 }
             };
         }
@@ -157,14 +165,14 @@ public class AccessAPI{
             jsreq = new JsonArrayRequest(url, responselistener, errlistener) {
                 @Override
                 public Map<String, String> getHeaders() throws AuthFailureError {
-                    return addSessionCookie(super.getHeaders(), sessionid);
+                    return addSessionCookie(super.getHeaders());
                 }
             };
         }
         queue.add(jsreq);
     }
 
-    private Map addSessionCookie(Map<String, String> headers, String sessionid){
+    private Map addSessionCookie(Map<String, String> headers){
         // Add session cookie to header
         if (headers == null
                 || headers.equals(Collections.emptyMap())) {
@@ -183,7 +191,7 @@ public class AccessAPI{
         return apiurl+request+"?apikey="+apikey;
     }
 
-    public void getProducts(final APIListener listener, final String sessionid){
+    public void getProducts(final APIListener listener){
         getRequest("/openapi/rest/products", null, new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
@@ -206,10 +214,10 @@ public class AccessAPI{
                 }
                 listener.receiveAnswer(products);
             }
-        }, sessionid,false);
+        },false);
     }
 
-    public void getProductTransactions(String uuid, final APIListener listener, final String sessionid){
+    public void getProductTransactions(final String uuid, final APIListener listener){
 
         getRequest("/openapi/rest/products/" + uuid + "/movements", null, new Response.Listener<JSONObject>() {
             @Override
@@ -223,7 +231,7 @@ public class AccessAPI{
                         try {
                             Date effectiveDate = format.parse(transactionobj.getString("effectiveDate"));
                             Date valDate = format.parse(transactionobj.getString("valDate"));
-                            Transaction transaction = new Transaction(null, transactionobj.getString("description"),
+                            Transaction transaction = new Transaction(uuid,null, transactionobj.getString("description"),
                                     transactionobj.getString("typeDesc"), transactionobj.getDouble("amount"),
                                     effectiveDate, valDate);
                             if (transactionobj.has("bankName")){
@@ -239,7 +247,7 @@ public class AccessAPI{
                     System.out.println("196: " + e);
                 }
             }
-        }, sessionid,true);
+        },true);
     }
 
 
