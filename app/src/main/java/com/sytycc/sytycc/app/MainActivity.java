@@ -3,6 +3,7 @@ package com.sytycc.sytycc.app;
 import android.annotation.TargetApi;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import com.sytycc.sytycc.app.layout.notifications.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
@@ -19,18 +20,18 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TabHost;
 
-import com.sytycc.sytycc.app.layout.notifications.Notification;
-import com.sytycc.sytycc.app.layout.notifications.NotificationAdapter;
 import com.sytycc.sytycc.app.data.Product;
+import com.sytycc.sytycc.app.layout.notifications.NotificationAdapter;
 import com.sytycc.sytycc.app.layout.products.ProductsAdapter;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -105,6 +106,7 @@ public class MainActivity extends ActionBarActivity {
                     api.getProducts(new APIListener() {
                         @Override
                         public void receiveAnswer(Object obj) {
+                            ((LinearLayout)productsListView.getParent()).removeView(findViewById(R.id.loadingProductsText));
                             List<Product> productList = (List<Product>) obj;
                             productsAdapter = new ProductsAdapter(MainActivity.this, productList);
                             productsListView.setAdapter(productsAdapter);
@@ -118,6 +120,7 @@ public class MainActivity extends ActionBarActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;

@@ -1,7 +1,6 @@
 package com.sytycc.sytycc.app.layout.notifications;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
