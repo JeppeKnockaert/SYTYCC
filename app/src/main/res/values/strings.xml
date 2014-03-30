@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">SYTYCC</string>
+    <string name="app_name">NotifyING</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Account settings</string>
     <string name="usercategory">User settings</string>
