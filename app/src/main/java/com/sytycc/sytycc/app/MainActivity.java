@@ -59,7 +59,7 @@ public class MainActivity extends ActionBarActivity {
         Intent intent = new Intent(this, NotificationService.class);
         startService(intent);
 
-        PreferenceManager.setDefaultValues(this, R.xml.preferences, true);
+        PreferenceManager.setDefaultValues(this, R.xml.preferences_account, true);
         setContentView(R.layout.activity_main);
 
         productsListView = (ListView) findViewById(R.id.productsListView);
@@ -90,7 +90,7 @@ public class MainActivity extends ActionBarActivity {
         /* show settings fragment in settings tab */
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        SettingsFragment fragment = new SettingsFragment();
+        NotificationSettingsFragment fragment = new NotificationSettingsFragment();
         fragmentTransaction.add(R.id.tab3, fragment);
         fragmentTransaction.commit();
 
@@ -166,7 +166,7 @@ public class MainActivity extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_settings) {
-            startActivity(new Intent(this, SettingsActivity.class));
+            startActivity(new Intent(this, AccountSettingsActivity.class));
             return true;
         }else if(id == R.id.action_cardstop){
             Intent callIntent = new Intent(Intent.ACTION_CALL);

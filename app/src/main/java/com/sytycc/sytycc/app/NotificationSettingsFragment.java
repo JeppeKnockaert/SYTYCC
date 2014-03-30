@@ -4,13 +4,12 @@ import android.os.Bundle;
 import android.preference.PreferenceFragment;
 
 /**
- * Created by Michaël on 29/03/14.
+ * Created by Roel on 30/03/14.
  */
-public class SettingsFragment extends PreferenceFragment {
-
+public class NotificationSettingsFragment extends PreferenceFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.preferences);
+        addPreferencesFromResource(R.xml.preferences_notifications);
     }
 }

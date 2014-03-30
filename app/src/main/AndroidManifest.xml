@@ -25,7 +25,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.sytycc.sytycc.app.SettingsActivity"
+            android:name=".AccountSettingsActivity"
             android:label="@string/title_activity_settings" >
         </activity>
         <activity
