@@ -52,6 +52,8 @@ public class NotificationFetcher extends AsyncTask<APIListener, Void, Void> {
                                 }
                             });
                         }
+                        api.destroySession();
+
                     }
                 });
             }

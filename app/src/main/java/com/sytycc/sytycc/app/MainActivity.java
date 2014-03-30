@@ -227,6 +227,7 @@ public class MainActivity extends ActionBarActivity {
                             productsListView.setAdapter(productsAdapter);
                         }
                     });
+                    api.destroySession();
                 }
             });
             return null;
