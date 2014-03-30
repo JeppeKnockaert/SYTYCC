@@ -5,40 +5,25 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-
-import com.sytycc.sytycc.app.data.Transaction;
-import com.sytycc.sytycc.app.data.Notifiable;
-
-import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
 import android.content.Context;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
-
 import android.content.DialogInterface;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.method.DigitsKeyListener;
 import android.text.method.PasswordTransformationMethod;
-import android.util.Log;
-
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TabHost;
@@ -46,10 +31,7 @@ import android.widget.TextView;
 
 import com.sytycc.sytycc.app.data.InfoNotification;
 import com.sytycc.sytycc.app.data.Notifiable;
-import com.sytycc.sytycc.app.data.OverLimitTransactionNotification;
 import com.sytycc.sytycc.app.data.Product;
-import com.sytycc.sytycc.app.data.Transaction;
-import com.sytycc.sytycc.app.data.TransactionNotifiable;
 import com.sytycc.sytycc.app.layout.notifications.NotificationAdapter;
 import com.sytycc.sytycc.app.layout.notifications.NotificationReceiver;
 import com.sytycc.sytycc.app.layout.notifications.NotificationService;
@@ -57,10 +39,7 @@ import com.sytycc.sytycc.app.layout.products.ProductsAdapter;
 import com.sytycc.sytycc.app.utilities.IOManager;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 
 
@@ -88,11 +67,6 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         instance = this;
-
-        /* Start service to pull from server and send notifications when the app is
-        * running in the background */
-        Intent intent = new Intent(this, NotificationService.class);
-        startService(intent);
 
         PreferenceManager.setDefaultValues(this, R.xml.preferences_account, true);
         setContentView(R.layout.activity_main);
@@ -191,10 +165,8 @@ public class MainActivity extends ActionBarActivity {
                                 /* Validate with pin dummy data because we can not access the
                                 * pin code of a user in the api */
                         if(Integer.parseInt(pin) < 500000){
-                                    /* Pin correct, show detailed information about */
-                            Notifiable notification = notificationAdapter.getItem(selectedPosition);
-                            notification.markAsRead();
-                            showNotificationDetails(notification);
+                                    /* Pin correct, show detailed information about  */
+                            showNotificationDetails(notificationAdapter.getItem(selectedPosition));
                         } else {
                             showPinDialog(selectedPosition,"PIN incorrect");
                         }
@@ -232,6 +204,19 @@ public class MainActivity extends ActionBarActivity {
         updateNotificationsAdapter = true;
     }
 
+    private void bootService(){
+        /* Start service to pull from server and send notifications when the app is
+                     * running in the background */
+        Intent intent = new Intent(this, NotificationService.class);
+        startService(intent);
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if(prefs.getBoolean("pref_key_notifications_enabled", false)){
+                        /* Start periodic checks */
+            schedulePulls();
+        }
+    }
+
     private class LoadProducts extends AsyncTask<String, Void, Void>{
         @Override
         protected Void doInBackground(String... strings) {
@@ -239,8 +224,8 @@ public class MainActivity extends ActionBarActivity {
             api.init(MainActivity.this,new SessionListener() {
                 @Override
                 public void sessionReady() {
-                    // For testing purposes
-                    new notificationFetcher().execute("");
+                    bootService();
+                    // Fetch products
                     api.getProducts(new APIListener() {
                         @Override
                         public void receiveAnswer(Object obj) {
@@ -326,86 +311,6 @@ public class MainActivity extends ActionBarActivity {
         /* Write notification(s) to file */
 
         //writeNotificationsToFile(notification);
-    }
-
-    private class notificationFetcher extends AsyncTask<String, Void, Void>{
-
-        private int done = 0;
-
-        @Override
-        protected Void doInBackground(String... strings) {
-            final AccessAPI api = AccessAPI.getInstance();
-            api.init(MainActivity.this,new SessionListener() {
-                @Override
-                public void sessionReady() {
-                    api.getProducts(new APIListener() {
-                        @Override
-                        public void receiveAnswer(Object obj) {
-                            final List<Product> productList = (List<Product>) obj;
-                            final Map<String, List<Transaction>> transactionList = new HashMap<String, List<Transaction>>();
-                            for (final Product product : productList){
-                                api.getProductTransactions(product.getUuid(),new APIListener() {
-                                    @Override
-                                    public void receiveAnswer(Object obj) {
-                                        transactionList.put(product.getUuid(), (List<Transaction>) obj);
-                                        if (transactionList.size() == productList.size()){
-                                            Stack<Transaction> toadd = retrieveNewTransactions(transactionList);
-                                            while (toadd != null && !toadd.empty()){
-                                                Transaction transaction = toadd.pop();
-                                                OverLimitTransactionNotification ol = new OverLimitTransactionNotification(transaction);
-                                                notificationAdapter.addNotification(ol);
-                                            }
-                                        }
-                                    }
-                                });
-                            }
-                        }
-                    });
-                }
-            });
-            return null;
-        }
-
-        private Stack<Transaction> retrieveNewTransactions(Map<String, List<Transaction>> transactions){
-            Stack<Notifiable> notifications = IOManager.fetchNotificationsFromStorage(MainActivity.this);
-            Stack<Transaction> toadd = new Stack<Transaction>();
-            if (notifications == null || notifications.isEmpty()){
-                Stack<Transaction> transactionstack = new Stack<Transaction>();
-                for (Map.Entry<String, List<Transaction>> entry : transactions.entrySet()){
-                    for (Transaction transaction : entry.getValue()){
-                        transactionstack.push(transaction);
-                    }
-                }
-                return transactionstack;
-            }
-            else {
-                for (Map.Entry<String, List<Transaction>> entry : transactions.entrySet()) {
-                    Transaction mostrecentnotification = null;
-                    List<Transaction> transactionlist = entry.getValue();
-                    Iterator<Notifiable> it = notifications.iterator();
-                    while (it.hasNext()) {
-                        Notifiable notification = it.next();
-                        if (notification instanceof TransactionNotifiable) {
-                            TransactionNotifiable transnotification = (TransactionNotifiable) notification;
-                            if (transnotification.getTransaction().getProductUuid().equals(entry.getKey())) {
-                                mostrecentnotification = transnotification.getTransaction();
-                            }
-                        }
-                    }
-                    int i = 0;
-                    boolean found = false;
-                    while (i < transactionlist.size() && !found) {
-                        Transaction currtransaction = transactionlist.get(i);
-                        if (!mostrecentnotification.equals(currtransaction)) {
-                            toadd.push(currtransaction);
-                        } else {
-                            found = true;
-                        }
-                    }
-                }
-                return toadd;
-            }
-        }
     }
 
     public void schedulePulls() {

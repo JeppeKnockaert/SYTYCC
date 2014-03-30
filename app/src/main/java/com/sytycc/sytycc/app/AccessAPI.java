@@ -22,6 +22,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -36,7 +40,7 @@ import java.util.Map;
  */
 public class AccessAPI{
 
-    private String apikey = "93ub7fAkQmG170m90hdOxbmlSPA3MTHY";
+    private String apikey = "rBCINWz7udeyGBNIWrEgkj3Y8NrWZkoK";
     private String apiurl = "https://apisandbox.ingdirect.es";
     private Context context;
     private String username;
@@ -59,7 +63,6 @@ public class AccessAPI{
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(ctxt);
         username = sharedPref.getString("pref_key_username",null);
         birthday = sharedPref.getString("pref_key_birthday",null);
-
         requestTicket(listener);
     }
 
@@ -90,7 +93,8 @@ public class AccessAPI{
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                if (error.networkResponse.statusCode == 502 && sessionid != null){
+                if (error.networkResponse.statusCode == 502){
+                    readCookieFromFile();
                     listener.sessionReady();
                 }
                 else{
@@ -123,6 +127,7 @@ public class AccessAPI{
                 String cookie = response.headers.get("Set-Cookie");
                 String[] splitCookie = cookie.split(";");
                 sessionid = splitCookie[0];
+                writeCookieToFile();
                 listener.sessionReady();
                 return resp;
             }
@@ -137,6 +142,38 @@ public class AccessAPI{
         };
 
         queue.add(strRequest);
+    }
+
+    private void writeCookieToFile(){
+        // Save cookie in file
+        String filename = "cookie";
+        File cookie = new File(context.getFilesDir().getPath()+"/cookie");
+        if (!cookie.exists()){
+            ObjectOutputStream oos = null;
+            try {
+                oos = new ObjectOutputStream(context.openFileOutput(filename, Context.MODE_PRIVATE));
+                oos.writeUTF(sessionid);
+                oos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void readCookieFromFile(){
+        // Read cookie from file
+        String filename = "cookie";
+        File cookie = new File(context.getFilesDir().getPath()+"/cookie");
+        if (cookie.exists()){
+            ObjectInputStream ois = null;
+            try {
+                ois = new ObjectInputStream(context.openFileInput(filename));
+                this.sessionid = ois.readUTF();
+                ois.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void getRequest(String requestpath, Map<String, String> arguments, final Response.Listener responselistener, boolean object){
