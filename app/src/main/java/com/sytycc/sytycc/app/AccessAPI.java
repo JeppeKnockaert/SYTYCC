@@ -43,6 +43,7 @@ public class AccessAPI{
     private String birthday;
     private String sessionid = null;
     private boolean sessionrequested = false;
+    private boolean productsloaded = false;
 
     private final static AccessAPI accessapi = new AccessAPI();
 
@@ -63,6 +64,10 @@ public class AccessAPI{
             birthday = sharedPref.getString("pref_key_birthday", null);
             requestTicket(listener);
         }
+    }
+
+    public void productsOk(){
+        this.productsloaded = true;
     }
 
     private void requestTicket(final SessionListener listener){
@@ -162,41 +167,9 @@ public class AccessAPI{
         queue.add(strRequest);
     }
 
-//    private void writeCookieToFile(){
-//        // Save cookie in file
-//        String filename = "cookie";
-//        File cookie = new File(context.getFilesDir().getPath()+"/cookie");
-//        if (!cookie.exists()){
-//            ObjectOutputStream oos = null;
-//            try {
-//                oos = new ObjectOutputStream(context.openFileOutput(filename, Context.MODE_PRIVATE));
-//                oos.writeUTF(sessionid);
-//                oos.close();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    }
-
     public boolean isSessionReady(){
         return !sessionrequested;
     }
-
-//    private void readCookieFromFile(){
-//        // Read cookie from file
-//        String filename = "cookie";
-//        File cookie = new File(context.getFilesDir().getPath()+"/cookie");
-//        if (cookie.exists()){
-//            ObjectInputStream ois = null;
-//            try {
-//                ois = new ObjectInputStream(context.openFileInput(filename));
-//                this.sessionid = ois.readUTF();
-//                ois.close();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    }
 
     private void getRequest(String requestpath, Map<String, String> arguments, final Response.Listener responselistener, boolean object){
         RequestQueue queue = Volley.newRequestQueue(context);
@@ -291,6 +264,7 @@ public class AccessAPI{
                     JSONArray producttransactions = response.getJSONArray("elements");
                     for (int i = 0; i < producttransactions.length(); i++) {
                         JSONObject transactionobj = producttransactions.getJSONObject(i);
+                        //System.out.println(transactionobj);
                         try {
                             Date effectiveDate = format.parse(transactionobj.getString("effectiveDate"));
                             Date valDate = format.parse(transactionobj.getString("valDate"));

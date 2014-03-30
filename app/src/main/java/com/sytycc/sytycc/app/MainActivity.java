@@ -55,13 +55,12 @@ public class MainActivity extends ActionBarActivity {
     public static String INTERNAL_STORAGE_FILENAME = "ModifyINGnotifications";
 
     private static int PIN_LENGTH = 6;
-    private static int SERVER_CHECK_INTERVAL = 5000; // Millisecs, time between server pulls
+    private static int SERVER_CHECK_INTERVAL = 100000; // Millisecs, time between server pulls
 
     private boolean updateNotificationsAdapter = false;
     private static MainActivity instance;
     private boolean pulling = false;
     private int notificationAmount = 0;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -230,6 +229,7 @@ public class MainActivity extends ActionBarActivity {
                         }
                     });
                     api.destroySession();
+                    api.productsOk();
                 }
             });
             return null;
@@ -273,29 +273,20 @@ public class MainActivity extends ActionBarActivity {
         setNotificationAmount(bundle.getInt("notificationAmount"));
     }
 
-    private void loadNotifications(){
+    public void loadNotifications(){
         ArrayList<Notifiable> noteList = new ArrayList<Notifiable>();
         notificationAdapter = new NotificationAdapter(getApplicationContext(),noteList);
 
         Stack<Notifiable> notifications = IOManager.fetchNotificationsFromStorage(this);
         if (notifications != null){
             for (Notifiable notification : notifications){
+                System.out.println("not: "+notification.getTitle());
                 notificationAdapter.add(notification);
             }
         }
 
-        notificationAdapter.add(new InfoNotification("Title 1","Reuse is nen homo 1"));
-        notificationAdapter.add(new InfoNotification("Title 2","Reuse is nen homo 2"));
-        Notifiable n1 = new InfoNotification("Title 3","Reuse is nen homo 3");
-        Notifiable n2 = new InfoNotification("Title 4","Reuse is nen homo 4");
-        Notifiable n3 = new InfoNotification("Title 5","Reuse is nen homo 5");
-        n1.markAsRead();
-        n2.markAsRead();
-        n3.markAsRead();
-
-        notificationAdapter.add(n1);
-        notificationAdapter.add(n2);
-        notificationAdapter.add(n3);
+        notificationAdapter.add(new InfoNotification("Info","New message from ING"));
+        notificationAdapter.add(new InfoNotification("Salary received","Salary received"));
 
         /*
          * Pull from server
@@ -343,5 +334,9 @@ public class MainActivity extends ActionBarActivity {
         this.notificationAmount = amount;
         TextView title = (TextView) tabHost.getTabWidget().getChildAt(1).findViewById(android.R.id.title);
         title.setText("" + (amount==0?"":amount));
+    }
+
+    public int getNotificationAmount(){
+        return notificationAmount;
     }
 }
