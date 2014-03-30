@@ -111,6 +111,7 @@ public class TransactionsActivity extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_settings) {
+            startActivity(new Intent(this, AccountSettingsActivity.class));
             return true;
         }else if(id == R.id.action_cardstop){
             Intent callIntent = new Intent(Intent.ACTION_CALL);
