@@ -64,8 +64,9 @@ import java.util.Stack;
 
 public class MainActivity extends ActionBarActivity {
 
-    private TabHost tabHost;
+    public TabHost tabHost;
     private ListView productsListView;
+    private ListView notificationsListView;
     private ProductsAdapter productsAdapter;
     private NotificationAdapter notificationAdapter;
 
@@ -75,6 +76,7 @@ public class MainActivity extends ActionBarActivity {
     private static int PIN_LENGTH = 6;
     private static int SERVER_CHECK_INTERVAL = 5000; // Millisecs, time between server pulls
 
+    private boolean updateNotificationsAdapter = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,14 +122,13 @@ public class MainActivity extends ActionBarActivity {
         fragmentTransaction.add(R.id.tab3, fragment);
         fragmentTransaction.commit();
 
-        /* Init notifications
-        * TODO afwerken */
+        /* Init notifications*/
         loadNotifications();
-        ListView notificationsListView = (ListView) findViewById(R.id.notificationsListView);
+        notificationsListView = (ListView) findViewById(R.id.notificationsListView);
         notificationsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, final int i, long l) {
-                showPinDialog(i,"Insert PIN code");
+                showPinDialog(i, "Insert PIN code");
             }
         });
         notificationsListView.setAdapter(notificationAdapter);
@@ -144,6 +145,16 @@ public class MainActivity extends ActionBarActivity {
 
         /* Start periodic checks */
         schedulePulls();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(updateNotificationsAdapter){
+            notificationAdapter.notifyAll();
+            updateNotificationsAdapter = false;
+        }
+
     }
 
     private void showPinDialog(final int selectedPosition, String title){
@@ -166,8 +177,10 @@ public class MainActivity extends ActionBarActivity {
                                 /* Validate with pin dummy data because we can not access the
                                 * pin code of a user in the api */
                         if(Integer.parseInt(pin) < 500000){
-                                    /* Pin correct, show detailed information about  */
-                            showNotificationDetails(notificationAdapter.getItem(selectedPosition));
+                                    /* Pin correct, show detailed information about */
+                            Notifiable notification = notificationAdapter.getItem(selectedPosition);
+                            notification.markAsRead();
+                            showNotificationDetails(notification);
                         } else {
                             showPinDialog(selectedPosition,"PIN incorrect");
                         }
@@ -202,6 +215,7 @@ public class MainActivity extends ActionBarActivity {
             ((TextView)d.findViewById(R.id.notification_text)).setText(notification.getMessage());
         }*/
         d.show();
+        updateNotificationsAdapter = true;
     }
 
     private class LoadProducts extends AsyncTask<String, Void, Void>{

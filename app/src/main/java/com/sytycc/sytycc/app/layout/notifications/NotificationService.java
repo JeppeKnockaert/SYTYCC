@@ -73,6 +73,8 @@ public class NotificationService extends IntentService {
             {
                 // App is not in the foreground
                 showNotification("Notification","Reuse is still an homo");
+            } else {
+                // Increment number in notifications tab name
             }
         }
     }
