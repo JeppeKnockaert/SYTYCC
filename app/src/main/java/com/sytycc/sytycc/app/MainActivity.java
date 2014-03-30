@@ -1,16 +1,35 @@
 package com.sytycc.sytycc.app;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+
+import com.sytycc.sytycc.app.data.Transaction;
+import com.sytycc.sytycc.app.data.Notifiable;
+
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
+import android.content.Context;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+
+import android.content.DialogInterface;
+
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.text.InputFilter;
+import android.text.InputType;
 import android.text.method.DigitsKeyListener;
+import android.text.method.PasswordTransformationMethod;
+import android.util.Log;
+
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,6 +38,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TabHost;
+import android.widget.TextView;
 
 import com.sytycc.sytycc.app.data.InfoNotification;
 import com.sytycc.sytycc.app.data.Notifiable;
@@ -48,7 +68,7 @@ public class MainActivity extends ActionBarActivity {
 
     private static String TAG = MainActivity.class.getSimpleName();
     public static String INTERNAL_STORAGE_FILENAME = "ModifyINGnotifications";
-    private static int PIN_LENGTH = 4;
+    private static int PIN_LENGTH = 6;
 
 
     @Override
@@ -101,20 +121,8 @@ public class MainActivity extends ActionBarActivity {
         ListView notificationsListView = (ListView) findViewById(R.id.notificationsListView);
         notificationsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                /* Ask for pin code to show notification details */
-                AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
-                alert.setTitle("Insert PIN code");
-                final EditText input = new EditText(MainActivity.this);
-                alert.setView(input);
-                input.setFilters(new InputFilter[]{
-                        new InputFilter.LengthFilter(PIN_LENGTH),
-                        DigitsKeyListener.getInstance(),
-                });
-
-                // Digits only & use numeric soft-keyboard.
-                input.setKeyListener(DigitsKeyListener.getInstance());
-                alert.show();
+            public void onItemClick(AdapterView<?> adapterView, View view, final int i, long l) {
+                showPinDialog(i,"Insert PIN code");
             }
         });
         notificationsListView.setAdapter(notificationAdapter);
@@ -128,6 +136,64 @@ public class MainActivity extends ActionBarActivity {
         if((getIntent() != null) && (getIntent().getExtras() != null) && (getIntent().getExtras().getInt("TAB") == 2)){
             tabHost.setCurrentTab(2);
         }
+    }
+
+    private void showPinDialog(final int selectedPosition, String title){
+        /* Ask for pin code to show notification details */
+        AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
+        alert.setTitle(title);
+        final EditText input = new EditText(MainActivity.this);
+        alert.setView(input);
+        input.setFilters(new InputFilter[]{
+                new InputFilter.LengthFilter(PIN_LENGTH),
+                DigitsKeyListener.getInstance(),
+        });
+        input.setInputType(InputType.TYPE_NUMBER_VARIATION_PASSWORD);
+        input.setTransformationMethod(new PasswordTransformationMethod());
+
+        alert.setPositiveButton("OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        String pin = input.getText().toString();
+                                /* Validate with pin dummy data because we can not access the
+                                * pin code of a user in the api */
+                        if(Integer.parseInt(pin) < 500000){
+                                    /* Pin correct, show detailed information about  */
+                            showNotificationDetails(notificationAdapter.getItem(selectedPosition));
+                        } else {
+                            showPinDialog(selectedPosition,"PIN incorrect");
+                        }
+                    }
+                });
+
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {}
+        });
+
+        // Digits only & use numeric soft-keyboard.
+        input.setKeyListener(DigitsKeyListener.getInstance());
+        alert.show();
+    }
+
+    private void showNotificationDetails(Notifiable notification){
+        AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
+        alert.setTitle("Notification details");
+        TextView text = new TextView(MainActivity.this);
+        alert.setView(text);
+
+        Dialog d = new Dialog(MainActivity.this);
+        d.setTitle("Notification details");
+        d.setContentView(R.layout.notification_detailed_view);
+        ((TextView)d.findViewById(R.id.notification_text)).setText(notification.getMessage());
+        ((TextView)d.findViewById(R.id.notification_owner)).setText(notification.getTitle());
+        /* TODO uitbreiden met meer details */
+        /*
+        if(notification instanceof InfoNotification){
+            InfoNotification infoNotification = (InfoNotification) notification;
+            ((TextView)d.findViewById(R.id.notification_text)).setText(infoNotification.);
+            ((TextView)d.findViewById(R.id.notification_text)).setText(notification.getMessage());
+        }*/
+        d.show();
     }
 
     private class LoadProducts extends AsyncTask<String, Void, Void>{
