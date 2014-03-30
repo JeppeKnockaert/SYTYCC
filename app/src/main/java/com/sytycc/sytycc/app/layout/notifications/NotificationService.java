@@ -5,15 +5,13 @@ import android.app.ActivityManager;
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 
+import com.sytycc.sytycc.app.APIListener;
 import com.sytycc.sytycc.app.MainActivity;
 import com.sytycc.sytycc.app.R;
 
@@ -78,8 +76,12 @@ public class NotificationService extends IntentService {
     }
 
     private boolean newStuffOnServer(){
-        /* TODO pull fom server, write to file, show new notification (read from file)
-         *  */
+        new NotificationFetcher(getApplicationContext()).execute(new APIListener() {
+            @Override
+            public void receiveAnswer(Object obj) {
+                System.out.println("Done: "+obj);
+            }
+        });
         return true;
     }
 

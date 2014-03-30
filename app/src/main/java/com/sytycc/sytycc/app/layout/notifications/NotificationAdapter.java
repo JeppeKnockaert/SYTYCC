@@ -11,7 +11,6 @@ import android.widget.TextView;
 
 import com.sytycc.sytycc.app.R;
 import com.sytycc.sytycc.app.data.Notifiable;
-import com.sytycc.sytycc.app.utilities.IOManager;
 
 import java.util.ArrayList;
 
