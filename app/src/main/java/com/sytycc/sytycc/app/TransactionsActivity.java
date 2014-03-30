@@ -85,11 +85,14 @@ public class TransactionsActivity extends ActionBarActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Dialog d = new Dialog(TransactionsActivity.this);
                 d.setTitle("Transaction details");
-                d.setContentView(R.layout.transaction_detailed_view);
-                ((TextView)d.findViewById(R.id.dateText)).setText(sdf.format(((Transaction)transactionsAdapter.getItem(i)).getEffectiveDate()));
-                ((TextView)d.findViewById(R.id.bankNumberText)).setText(((Transaction)transactionsAdapter.getItem(i)).getBankName());
-                ((TextView)d.findViewById(R.id.amountText)).setText(""+((Transaction)transactionsAdapter.getItem(i)).getAmount());
-                ((TextView)d.findViewById(R.id.descriptionText)).setText(((Transaction)transactionsAdapter.getItem(i)).getDescription());
+                d.setContentView(R.layout.transaction_detailed);
+                ((TextView)d.findViewById(R.id.transaction_effective_date)).setText(sdf.format(((Transaction)transactionsAdapter.getItem(i)).getEffectiveDate()));
+                ((TextView)d.findViewById(R.id.transaction_bank_name)).setText(((Transaction)transactionsAdapter.getItem(i)).getBankName());
+                ((TextView)d.findViewById(R.id.transaction_amount)).setText(""+((Transaction)transactionsAdapter.getItem(i)).getAmount());
+                ((TextView)d.findViewById(R.id.transaction_description)).setText(((Transaction)transactionsAdapter.getItem(i)).getDescription());
+                ((TextView)d.findViewById(R.id.transaction_product_uuid)).setText(((Transaction)transactionsAdapter.getItem(i)).getProductUuid());
+                ((TextView)d.findViewById(R.id.transaction_type)).setText(((Transaction)transactionsAdapter.getItem(i)).getTypeDesc());
+                ((TextView)d.findViewById(R.id.transaction_val_date)).setText(sdf.format(((Transaction)transactionsAdapter.getItem(i)).getValDate()));
                 d.show();
             }
         });

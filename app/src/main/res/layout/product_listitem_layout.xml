@@ -2,7 +2,9 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:id="@+id/productListItem">
+    android:layout_height="match_parent" android:id="@+id/productListItem"
+    android:paddingLeft="35dp"
+    android:paddingRight="35dp">
 
     <TextView
         android:layout_width="wrap_content"
@@ -12,7 +14,7 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_toLeftOf="@+id/newText" />
+        android:layout_toLeftOf="@+id/newText"/>
 
     <TextView
         android:layout_width="wrap_content"
