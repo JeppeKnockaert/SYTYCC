@@ -64,7 +64,7 @@ public class TransactionsActivity extends ActionBarActivity {
         final AccessAPI api = AccessAPI.getInstance();
         api.init(this,new SessionListener() {
             @Override
-            public void sessionReady(final String sessionid) {
+            public void sessionReady() {
                 api.getProductTransactions(product.getUuid(),new APIListener() {
                     @Override
                     public void receiveAnswer(Object obj) {
@@ -73,7 +73,7 @@ public class TransactionsActivity extends ActionBarActivity {
                         transactionsAdapter = new TransactionsAdapter(TransactionsActivity.this,transactionList);
                         transactionsListView.setAdapter(transactionsAdapter);
                     }
-                },sessionid);
+                });
             }
         });
 

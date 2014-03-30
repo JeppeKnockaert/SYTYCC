@@ -1,16 +1,37 @@
 package com.sytycc.sytycc.app;
 
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+
+import com.sytycc.sytycc.app.data.Transaction;
+import com.sytycc.sytycc.app.data.Notifiable;
+
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
+import android.content.Context;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+
+import android.content.DialogInterface;
+
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.text.InputFilter;
+import android.text.InputType;
 import android.text.method.DigitsKeyListener;
+import android.text.method.PasswordTransformationMethod;
+import android.util.Log;
+
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,13 +40,16 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TabHost;
+import android.widget.TextView;
 
 import com.sytycc.sytycc.app.data.InfoNotification;
 import com.sytycc.sytycc.app.data.Notifiable;
+import com.sytycc.sytycc.app.data.OverLimitTransactionNotification;
 import com.sytycc.sytycc.app.data.Product;
 import com.sytycc.sytycc.app.data.Transaction;
 import com.sytycc.sytycc.app.data.TransactionNotifiable;
 import com.sytycc.sytycc.app.layout.notifications.NotificationAdapter;
+import com.sytycc.sytycc.app.layout.notifications.NotificationReceiver;
 import com.sytycc.sytycc.app.layout.notifications.NotificationService;
 import com.sytycc.sytycc.app.layout.products.ProductsAdapter;
 import com.sytycc.sytycc.app.utilities.IOManager;
@@ -47,7 +71,9 @@ public class MainActivity extends ActionBarActivity {
 
     private static String TAG = MainActivity.class.getSimpleName();
     public static String INTERNAL_STORAGE_FILENAME = "ModifyINGnotifications";
-    private static int PIN_LENGTH = 4;
+
+    private static int PIN_LENGTH = 6;
+    private static int SERVER_CHECK_INTERVAL = 5000; // Millisecs, time between server pulls
 
 
     @Override
@@ -100,20 +126,8 @@ public class MainActivity extends ActionBarActivity {
         ListView notificationsListView = (ListView) findViewById(R.id.notificationsListView);
         notificationsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                /* Ask for pin code to show notification details */
-                AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
-                alert.setTitle("Insert PIN code");
-                final EditText input = new EditText(MainActivity.this);
-                alert.setView(input);
-                input.setFilters(new InputFilter[]{
-                        new InputFilter.LengthFilter(PIN_LENGTH),
-                        DigitsKeyListener.getInstance(),
-                });
-
-                // Digits only & use numeric soft-keyboard.
-                input.setKeyListener(DigitsKeyListener.getInstance());
-                alert.show();
+            public void onItemClick(AdapterView<?> adapterView, View view, final int i, long l) {
+                showPinDialog(i,"Insert PIN code");
             }
         });
         notificationsListView.setAdapter(notificationAdapter);
@@ -127,6 +141,67 @@ public class MainActivity extends ActionBarActivity {
         if((getIntent() != null) && (getIntent().getExtras() != null) && (getIntent().getExtras().getInt("TAB") == 2)){
             tabHost.setCurrentTab(2);
         }
+
+        /* Start periodic checks */
+        schedulePulls();
+    }
+
+    private void showPinDialog(final int selectedPosition, String title){
+        /* Ask for pin code to show notification details */
+        AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
+        alert.setTitle(title);
+        final EditText input = new EditText(MainActivity.this);
+        alert.setView(input);
+        input.setFilters(new InputFilter[]{
+                new InputFilter.LengthFilter(PIN_LENGTH),
+                DigitsKeyListener.getInstance(),
+        });
+        input.setInputType(InputType.TYPE_NUMBER_VARIATION_PASSWORD);
+        input.setTransformationMethod(new PasswordTransformationMethod());
+
+        alert.setPositiveButton("OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        String pin = input.getText().toString();
+                                /* Validate with pin dummy data because we can not access the
+                                * pin code of a user in the api */
+                        if(Integer.parseInt(pin) < 500000){
+                                    /* Pin correct, show detailed information about  */
+                            showNotificationDetails(notificationAdapter.getItem(selectedPosition));
+                        } else {
+                            showPinDialog(selectedPosition,"PIN incorrect");
+                        }
+                    }
+                });
+
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {}
+        });
+
+        // Digits only & use numeric soft-keyboard.
+        input.setKeyListener(DigitsKeyListener.getInstance());
+        alert.show();
+    }
+
+    private void showNotificationDetails(Notifiable notification){
+        AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
+        alert.setTitle("Notification details");
+        TextView text = new TextView(MainActivity.this);
+        alert.setView(text);
+
+        Dialog d = new Dialog(MainActivity.this);
+        d.setTitle("Notification details");
+        d.setContentView(R.layout.notification_detailed_view);
+        ((TextView)d.findViewById(R.id.notification_text)).setText(notification.getMessage());
+        ((TextView)d.findViewById(R.id.notification_owner)).setText(notification.getTitle());
+        /* TODO uitbreiden met meer details */
+        /*
+        if(notification instanceof InfoNotification){
+            InfoNotification infoNotification = (InfoNotification) notification;
+            ((TextView)d.findViewById(R.id.notification_text)).setText(infoNotification.);
+            ((TextView)d.findViewById(R.id.notification_text)).setText(notification.getMessage());
+        }*/
+        d.show();
     }
 
     private class LoadProducts extends AsyncTask<String, Void, Void>{
@@ -135,7 +210,9 @@ public class MainActivity extends ActionBarActivity {
             final AccessAPI api = AccessAPI.getInstance();
             api.init(MainActivity.this,new SessionListener() {
                 @Override
-                public void sessionReady(final String sessionid) {
+                public void sessionReady() {
+                    // For testing purposes
+                    new notificationFetcher().execute("");
                     api.getProducts(new APIListener() {
                         @Override
                         public void receiveAnswer(Object obj) {
@@ -144,7 +221,7 @@ public class MainActivity extends ActionBarActivity {
                             productsAdapter = new ProductsAdapter(MainActivity.this, productList);
                             productsListView.setAdapter(productsAdapter);
                         }
-                    },sessionid);
+                    });
                 }
             });
             return null;
@@ -229,7 +306,7 @@ public class MainActivity extends ActionBarActivity {
             final AccessAPI api = AccessAPI.getInstance();
             api.init(MainActivity.this,new SessionListener() {
                 @Override
-                public void sessionReady(final String sessionid) {
+                public void sessionReady() {
                     api.getProducts(new APIListener() {
                         @Override
                         public void receiveAnswer(Object obj) {
@@ -242,12 +319,17 @@ public class MainActivity extends ActionBarActivity {
                                         transactionList.put(product.getUuid(), (List<Transaction>) obj);
                                         if (transactionList.size() == productList.size()){
                                             Stack<Transaction> toadd = retrieveNewTransactions(transactionList);
+                                            while (toadd != null && !toadd.empty()){
+                                                Transaction transaction = toadd.pop();
+                                                OverLimitTransactionNotification ol = new OverLimitTransactionNotification(transaction);
+                                                notificationAdapter.addNotification(ol);
+                                            }
                                         }
                                     }
-                                },sessionid);
+                                });
                             }
                         }
-                    },sessionid);
+                    });
                 }
             });
             return null;
@@ -256,33 +338,56 @@ public class MainActivity extends ActionBarActivity {
         private Stack<Transaction> retrieveNewTransactions(Map<String, List<Transaction>> transactions){
             Stack<Notifiable> notifications = IOManager.fetchNotificationsFromStorage(MainActivity.this);
             Stack<Transaction> toadd = new Stack<Transaction>();
-            for (Map.Entry<String, List<Transaction>> entry : transactions.entrySet()){
-                Transaction mostrecentnotification = null;
-                List<Transaction> transactionlist = entry.getValue();
-                Iterator<Notifiable> it = notifications.iterator();
-                while (it.hasNext()){
-                    Notifiable notification = it.next();
-                    if (notification instanceof TransactionNotifiable){
-                        TransactionNotifiable transnotification = (TransactionNotifiable) notification;
-                        if (transnotification.getProduct().equals(entry.getKey())){
-                            mostrecentnotification = transnotification.getTransaction();
+            if (notifications == null || notifications.isEmpty()){
+                return null;
+            }
+            else {
+                for (Map.Entry<String, List<Transaction>> entry : transactions.entrySet()) {
+                    Transaction mostrecentnotification = null;
+                    List<Transaction> transactionlist = entry.getValue();
+                    Iterator<Notifiable> it = notifications.iterator();
+                    while (it.hasNext()) {
+                        Notifiable notification = it.next();
+                        if (notification instanceof TransactionNotifiable) {
+                            TransactionNotifiable transnotification = (TransactionNotifiable) notification;
+                            if (transnotification.getTransaction().getProductUuid().equals(entry.getKey())) {
+                                mostrecentnotification = transnotification.getTransaction();
+                            }
+                        }
+                    }
+                    int i = 0;
+                    boolean found = false;
+                    while (i < transactionlist.size() && !found) {
+                        Transaction currtransaction = transactionlist.get(i);
+                        if (!mostrecentnotification.equals(currtransaction)) {
+                            toadd.push(currtransaction);
+                        } else {
+                            found = true;
                         }
                     }
                 }
-                int i = 0;
-                boolean found = false;
-                while (i < transactionlist.size() && !found){
-                    Transaction currtransaction = transactionlist.get(i);
-                    if (!mostrecentnotification.equals(currtransaction)){
-                       toadd.push(currtransaction);
-                    }
-                    else{
-                        found = true;
-                    }
-                }
+                return toadd;
             }
-            return toadd;
         }
     }
 
+    public void schedulePulls() {
+        Intent intent = new Intent(getApplicationContext(), NotificationReceiver.class);
+        // Create a PendingIntent to be triggered when the alarm goes off
+        final PendingIntent pIntent = PendingIntent.getBroadcast(this, NotificationReceiver.REQUEST_CODE,
+                intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        long firstMillis = System.currentTimeMillis();
+        int intervalMillis = SERVER_CHECK_INTERVAL;
+        AlarmManager alarm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+        alarm.setInexactRepeating(AlarmManager.RTC_WAKEUP, firstMillis, intervalMillis, pIntent);
+    }
+
+    public void cancelPulls() {
+        Intent intent = new Intent(getApplicationContext(), NotificationReceiver.class);
+        final PendingIntent pIntent = PendingIntent.getBroadcast(this, NotificationReceiver.REQUEST_CODE,
+                intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager alarm = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+        alarm.cancel(pIntent);
+    }
 }
