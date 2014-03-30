@@ -14,6 +14,9 @@ import android.support.v4.app.NotificationCompat;
 import com.sytycc.sytycc.app.APIListener;
 import com.sytycc.sytycc.app.MainActivity;
 import com.sytycc.sytycc.app.R;
+import com.sytycc.sytycc.app.data.Transaction;
+
+import java.util.Stack;
 
 /**
  * Created by Michaël on 30/03/14.
@@ -66,25 +69,24 @@ public class NotificationService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        if(newStuffOnServer()){
-            if (!getApplicationContext().getPackageName().equalsIgnoreCase(((ActivityManager)getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE)).getRunningTasks(1).get(0).topActivity.getPackageName()))
-            {
-                // App is not in the foreground
-                showNotification("Notification","Reuse is still an homo");
-            } else {
-                // Increment number in notifications tab name
-            }
-        }
-    }
-
-    private boolean newStuffOnServer(){
         new NotificationFetcher(getApplicationContext()).execute(new APIListener() {
             @Override
             public void receiveAnswer(Object obj) {
-                System.out.println("Done: "+obj);
+                if (obj != null) {
+                    Stack<Transaction> transactions = (Stack<Transaction>) obj;
+                    // New transactions available
+                    if (!transactions.empty()){
+                        if (!getApplicationContext().getPackageName().equalsIgnoreCase(((ActivityManager)getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE)).getRunningTasks(1).get(0).topActivity.getPackageName()))
+                        {
+                            // App is not in the foreground
+                            showNotification("Notification","Reuse is still an homo");
+                        } else {
+                            // Increment number in notifications tab name
+                        }
+                    }
+                }
             }
         });
-        return true;
     }
 
 }
