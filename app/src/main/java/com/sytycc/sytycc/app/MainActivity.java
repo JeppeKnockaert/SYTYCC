@@ -207,7 +207,7 @@ public class MainActivity extends ActionBarActivity {
             api.init(MainActivity.this,new SessionListener() {
                 @Override
                 public void sessionReady() {
-                    //bootService();
+                    bootService();
                     // Fetch products
                     api.getProducts(new APIListener() {
                         @Override
