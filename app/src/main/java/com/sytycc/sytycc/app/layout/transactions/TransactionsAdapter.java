@@ -72,9 +72,9 @@ public class TransactionsAdapter extends BaseAdapter{
         holder.bankNrText.setText(rowItem.getBankName());
 
         if(rowItem.getAmount() < 0){
-            convertView.setBackgroundColor(Color.RED);
+            convertView.setBackgroundColor(Color.rgb(255,208,208));
         }else{
-            convertView.setBackgroundColor(Color.GREEN);
+            convertView.setBackgroundColor(Color.rgb(208,255,208));
         }
         holder.amountText.setText(""+rowItem.getAmount());
 

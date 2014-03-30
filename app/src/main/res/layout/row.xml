@@ -14,9 +14,12 @@
         android:id="@+id/label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="26sp"
-        android:paddingLeft="5dp"
-        android:textColor="@android:color/black">
+        android:textSize="22sp"
+        android:textColor="@android:color/black"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:ellipsize="marquee"
+        android:fadingEdge="horizontal"
+        >
     </TextView>
 
     <TextView
@@ -24,8 +27,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/label"
-        android:textSize="18sp"
-        android:paddingLeft="5dp"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:maxLines="4"
+        android:textSize="15sp"
         android:textColor="@android:color/tertiary_text_dark">
     </TextView>
 

@@ -55,12 +55,13 @@ public class MainActivity extends ActionBarActivity {
     public static String INTERNAL_STORAGE_FILENAME = "ModifyINGnotifications";
 
     private static int PIN_LENGTH = 6;
-    private static int SERVER_CHECK_INTERVAL = 100000; // Millisecs, time between server pulls
+    private static int SERVER_CHECK_INTERVAL = 5000; // Millisecs, time between server pulls
 
     private boolean updateNotificationsAdapter = false;
     private static MainActivity instance;
     private boolean pulling = false;
     private int notificationAmount = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,8 +118,10 @@ public class MainActivity extends ActionBarActivity {
         notificationsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, final int i, long l) {
-                showNotificationDetails(notificationAdapter.getItem(i));
-                //showPinDialog(i, "Insert PIN code");
+                Notifiable n = notificationAdapter.getItem(i);
+                n.markAsRead();
+                showNotificationDetails(n);
+                notificationAdapter.notifyDataSetChanged();
             }
         });
         notificationsListView.setAdapter(notificationAdapter);
@@ -145,48 +148,8 @@ public class MainActivity extends ActionBarActivity {
     protected void onResume() {
         super.onResume();
         if(updateNotificationsAdapter){
-            notificationAdapter.notifyAll();
             updateNotificationsAdapter = false;
         }
-
-    }
-
-    private void showPinDialog(final int selectedPosition, String title){
-        /* Ask for pin code to show notification details */
-        AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
-        alert.setTitle(title);
-        final EditText input = new EditText(MainActivity.this);
-        alert.setView(input);
-        input.setFilters(new InputFilter[]{
-                new InputFilter.LengthFilter(PIN_LENGTH),
-                DigitsKeyListener.getInstance(),
-        });
-        input.setInputType(InputType.TYPE_NUMBER_VARIATION_PASSWORD);
-        input.setTransformationMethod(new PasswordTransformationMethod());
-
-        alert.setPositiveButton("OK",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        String pin = input.getText().toString();
-                                /* Validate with pin dummy data because we can not access the
-                                * pin code of a user in the api */
-                        if (Integer.parseInt(pin) < 500000) {
-                                    /* Pin correct, show detailed information about  */
-
-                        } else {
-                            showPinDialog(selectedPosition, "PIN incorrect");
-                        }
-                    }
-                }
-        );
-
-        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {}
-        });
-
-        // Digits only & use numeric soft-keyboard.
-        input.setKeyListener(DigitsKeyListener.getInstance());
-        alert.show();
     }
 
     private void showNotificationDetails(Notifiable notification){
@@ -196,17 +159,24 @@ public class MainActivity extends ActionBarActivity {
         alert.setView(text);
 
         Dialog d = new Dialog(MainActivity.this);
+
         d.setTitle("Notification details");
-        d.setContentView(R.layout.notification_detailed_view);
-        ((TextView)d.findViewById(R.id.notification_text)).setText(notification.getMessage());
-        ((TextView)d.findViewById(R.id.notification_owner)).setText(notification.getTitle());
-        /* TODO uitbreiden met meer details */
-        /*
+
         if(notification instanceof InfoNotification){
-            InfoNotification infoNotification = (InfoNotification) notification;
-            ((TextView)d.findViewById(R.id.notification_text)).setText(infoNotification.);
+            d.setContentView(R.layout.notification_detailed_view);
+            ((TextView)d.findViewById(R.id.notification_title)).setText(notification.getTitle());
             ((TextView)d.findViewById(R.id.notification_text)).setText(notification.getMessage());
-        }*/
+        } else if (notification instanceof OverLimitTransactionNotification){
+            d.setContentView(R.layout.transaction_detailed);
+            Transaction t = ((TransactionNotifiable) notification).getTransaction();
+            ((TextView)d.findViewById(R.id.transaction_description)).setText(t.getDescription());
+            ((TextView)d.findViewById(R.id.transaction_val_date)).setText(t.getValDate().toString());
+            ((TextView)d.findViewById(R.id.transaction_effective_date)).setText(t.getEffectiveDate().toString());
+            ((TextView)d.findViewById(R.id.transaction_bank_name)).setText(t.getBankName().toString());
+            ((TextView)d.findViewById(R.id.transaction_type)).setText(t.getTypeDesc());
+            ((TextView)d.findViewById(R.id.transaction_product_uuid)).setText(t.getProductUuid());
+            ((TextView)d.findViewById(R.id.transaction_amount)).setText("" + t.getAmount());
+        }
         d.show();
         updateNotificationsAdapter = true;
     }
@@ -229,7 +199,6 @@ public class MainActivity extends ActionBarActivity {
                         }
                     });
                     api.destroySession();
-                    api.productsOk();
                 }
             });
             return null;
@@ -257,6 +226,8 @@ public class MainActivity extends ActionBarActivity {
             Intent callIntent = new Intent(Intent.ACTION_CALL);
             callIntent.setData(Uri.parse("tel:0495789995"));
             startActivity(callIntent);
+        }else if(id == R.id.action_transfer){
+            transfer();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -280,7 +251,6 @@ public class MainActivity extends ActionBarActivity {
         Stack<Notifiable> notifications = IOManager.fetchNotificationsFromStorage(this);
         if (notifications != null){
             for (Notifiable notification : notifications){
-                System.out.println("not: "+notification.getTitle());
                 notificationAdapter.add(notification);
             }
         }
@@ -334,6 +304,11 @@ public class MainActivity extends ActionBarActivity {
         this.notificationAmount = amount;
         TextView title = (TextView) tabHost.getTabWidget().getChildAt(1).findViewById(android.R.id.title);
         title.setText("" + (amount==0?"":amount));
+    }
+
+
+    public void transfer(){
+        System.out.println("transfer");
     }
 
     public int getNotificationAmount(){

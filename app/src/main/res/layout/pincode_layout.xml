@@ -4,7 +4,16 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
-    android:paddingBottom="100dp">
+    android:paddingBottom="100dp"
+    android:id="@+id/linearLayout">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageView"
+        android:src="@drawable/ing_logo"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="50dp" />
 
     <TextView
         android:layout_width="wrap_content"
