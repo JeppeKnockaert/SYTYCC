@@ -1,11 +1,12 @@
 package com.sytycc.sytycc.app.data;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Created by Roel on 29/03/14.
  */
-public class Transaction {
+public class Transaction implements Serializable{
 
     private String bankName;
     private String description;
@@ -14,6 +15,8 @@ public class Transaction {
     private Date effectiveDate;
     private Date valDate;
     private String productUuid;
+
+    private static final long serialVersionUID = 7526471155622776147L;
 
     public Transaction(String productUuid, String bankName, String description, String typeDesc, double amount, Date effectiveDate, Date valDate) {
         this.bankName = bankName;
@@ -93,19 +96,5 @@ public class Transaction {
         if (!valDate.equals(that.valDate)) return false;
 
         return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result;
-        long temp;
-        result = bankName != null ? bankName.hashCode() : 0;
-        result = 31 * result + description.hashCode();
-        result = 31 * result + typeDesc.hashCode();
-        temp = Double.doubleToLongBits(amount);
-        result = 31 * result + (int) (temp ^ (temp >>> 32));
-        result = 31 * result + effectiveDate.hashCode();
-        result = 31 * result + valDate.hashCode();
-        return result;
     }
 }

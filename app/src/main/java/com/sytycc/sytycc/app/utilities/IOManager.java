@@ -20,18 +20,18 @@ public class IOManager {
     private static final String filename = "notifications";
 
     private static void testExistance(Context context){
-        File notificationfile = new File(getFilePath(context));
+        File notificationfile = new File(context.getFilesDir().getPath().toString()+"/"+filename);
         if (!notificationfile.exists()){
             try {
-                notificationfile.createNewFile();
+                ObjectOutputStream oos = new ObjectOutputStream(context.openFileOutput(filename, Context.MODE_PRIVATE));
+                Stack<Notifiable> emptystack = new Stack<Notifiable>();
+                oos.writeObject(emptystack);
+                oos.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            Stack<Notifiable> stack = fetchNotificationsFromStorage(context);
         }
-    }
-
-    private static String getFilePath(Context context){
-        return context.getFilesDir().getPath().toString()+"/"+filename;
     }
 
     public static Stack<Notifiable> fetchNotificationsFromStorage(Context context){
@@ -46,6 +46,7 @@ public class IOManager {
             System.out.println("189: "+e);
         } catch (IOException e) {
             if (e instanceof EOFException){
+                System.out.println("EOF");
                 return null;
             }
             else{
@@ -59,23 +60,19 @@ public class IOManager {
 
     public static void addNotificationToStorage(Notifiable notification, Context context){
         ObjectOutputStream oos = null;
-        ObjectInputStream ois = null;
         Stack<Notifiable> transactions = null;
         testExistance(context);
         try {
-            ois = new ObjectInputStream(context.openFileInput(filename));
-            oos = new ObjectOutputStream(context.openFileOutput(filename, Context.MODE_PRIVATE));
-            transactions = (Stack<Notifiable>)ois.readObject();
+            transactions = fetchNotificationsFromStorage(context);
             transactions.push(notification);
+
+            oos = new ObjectOutputStream(context.openFileOutput(filename, Context.MODE_PRIVATE));
             oos.writeObject(transactions);
-            ois.close();
             oos.close();
         } catch (FileNotFoundException e) {
             System.out.println("189: "+e);
         } catch (IOException e) {
             System.out.println("191: " + e);
-        } catch (ClassNotFoundException e) {
-            System.out.println("193: " + e);
         }
     }
 }

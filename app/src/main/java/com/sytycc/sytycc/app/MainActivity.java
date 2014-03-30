@@ -1,6 +1,5 @@
 package com.sytycc.sytycc.app;
 
-import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.FragmentManager;
@@ -281,16 +280,17 @@ public class MainActivity extends ActionBarActivity {
 
     private void loadNotifications(){
         ArrayList<Notifiable> noteList = new ArrayList<Notifiable>();
-        List<Notifiable> notifications = IOManager.fetchNotificationsFromStorage(this);
+        notificationAdapter = new NotificationAdapter(getApplicationContext(),noteList);
+
+        Stack<Notifiable> notifications = IOManager.fetchNotificationsFromStorage(this);
         if (notifications != null){
             for (Notifiable notification : notifications){
-
+                notificationAdapter.add(notification);
             }
         }
-        /* TODO read from internal storage and add */
 
-        noteList.add(new InfoNotification("Title 1","Reuse is nen homo 1"));
-        noteList.add(new InfoNotification("Title 2","Reuse is nen homo 2"));
+        notificationAdapter.add(new InfoNotification("Title 1","Reuse is nen homo 1"));
+        notificationAdapter.add(new InfoNotification("Title 2","Reuse is nen homo 2"));
         Notifiable n1 = new InfoNotification("Title 3","Reuse is nen homo 3");
         Notifiable n2 = new InfoNotification("Title 4","Reuse is nen homo 4");
         Notifiable n3 = new InfoNotification("Title 5","Reuse is nen homo 5");
@@ -298,10 +298,10 @@ public class MainActivity extends ActionBarActivity {
         n2.markAsRead();
         n3.markAsRead();
 
-        noteList.add(n1);
-        noteList.add(n2);
-        noteList.add(n3);
-        notificationAdapter = new NotificationAdapter(getApplicationContext(),noteList);
+        notificationAdapter.add(n1);
+        notificationAdapter.add(n2);
+        notificationAdapter.add(n3);
+
         /*
          * Pull from server
          * If in background, call showNotification
@@ -355,7 +355,13 @@ public class MainActivity extends ActionBarActivity {
             Stack<Notifiable> notifications = IOManager.fetchNotificationsFromStorage(MainActivity.this);
             Stack<Transaction> toadd = new Stack<Transaction>();
             if (notifications == null || notifications.isEmpty()){
-                return null;
+                Stack<Transaction> transactionstack = new Stack<Transaction>();
+                for (Map.Entry<String, List<Transaction>> entry : transactions.entrySet()){
+                    for (Transaction transaction : entry.getValue()){
+                        transactionstack.push(transaction);
+                    }
+                }
+                return transactionstack;
             }
             else {
                 for (Map.Entry<String, List<Transaction>> entry : transactions.entrySet()) {
